@@ -18,15 +18,17 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <iconPacks:PackIconLucide Kind="Ruler" Width="15" Height="15" VerticalAlignment="Center"
+                <!-- A DockPanel, not a horizontal StackPanel: the stack measures its children
+                     with unlimited width, so the title would be clipped instead of trimmed. -->
+                <DockPanel Grid.Column="0">
+                    <iconPacks:PackIconLucide DockPanel.Dock="Left" Kind="Ruler" Width="15" Height="15" VerticalAlignment="Center"
                                               Foreground="{DynamicResource TextSecondaryBrush}" />
                     <!-- Centered on the row: the row's height is the edit button's, and a
                          stretched TextBlock would ride the top edge while the icon centers. -->
                     <TextBlock x:Name="TitleText" Style="{StaticResource FieldLabel}" Margin="8,0,0,0"
                                VerticalAlignment="Center"
                                TextTrimming="CharacterEllipsis" />
-                </StackPanel>
+                </DockPanel>
                 <Button x:Name="EditButton" Grid.Column="1" Style="{StaticResource CompactButton}"
                         VerticalAlignment="Center" Margin="12,0,0,0" />
             </Grid>

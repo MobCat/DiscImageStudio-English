@@ -1,0 +1,137 @@
+{
+  "Standard 80-minute CD": {
+    "zh-CN": "标准 80min CD",
+    "en": "Standard 80-minute CD",
+    "zh-TW": "標準 80min CD"
+  },
+  "ECMA-130/ISO/IEC 10149 standard speed of 1200 mm/s; 120 mm disc, approximately 80 minutes, with 359,849 sectors (24.5-56.8 mm).": {
+    "zh-CN": "ECMA-130／ISO/IEC 10149 标准速度 1200 mm/s；120 mm 盘、约 80 分钟，359,849 扇区（24.5–56.8 mm）。",
+    "en": "ECMA-130/ISO/IEC 10149 standard speed of 1200 mm/s; 120 mm disc, approximately 80 minutes, with 359,849 sectors (24.5-56.8 mm).",
+    "zh-TW": "ECMA-130／ISO/IEC 10149 標準速度 1200 mm/s；120 mm 光碟、約 80 分鐘，359,849 磁區（24.5–56.8 mm）。"
+  },
+  "Ritek Medical Aqua Disc (measured)": {
+    "zh-CN": "铼德医疗水蓝盘（实测）",
+    "en": "Ritek Medical Aqua Disc (measured)",
+    "zh-TW": "錸德醫療水藍盤（實測）"
+  },
+  "Measured parameters: inner radius 24.911275 mm, outer radius 57.931155 mm, and 359,845 sectors; scan speed is 1200 mm/s.": {
+    "zh-CN": "实测参数：内半径 24.911275 mm、外半径 57.931155 mm、359,845 扇区；扫描速度采用 1200 mm/s。",
+    "en": "Measured parameters: inner radius 24.911275 mm, outer radius 57.931155 mm, and 359,845 sectors; scan speed is 1200 mm/s.",
+    "zh-TW": "實測參數：內半徑 24.911275 mm、外半徑 57.931155 mm、359,845 磁區；掃描速度採用 1200 mm/s。"
+  },
+  "Verbatim CD-R AZO (43438) (measured)": {
+    "zh-CN": "Verbatim CD-R AZO (43438)（实测）",
+    "en": "Verbatim CD-R AZO (43438) (measured)",
+    "zh-TW": "Verbatim CD-R AZO (43438)（實測）"
+  },
+  "Measured parameters: inner radius 24.837775 mm, outer radius 58.020875 mm, and 359,848 sectors; scan speed is 1200 mm/s.": {
+    "zh-CN": "实测参数：内半径 24.837775 mm、外半径 58.020875 mm、359,848 扇区；扫描速度采用 1200 mm/s。",
+    "en": "Measured parameters: inner radius 24.837775 mm, outer radius 58.020875 mm, and 359,848 sectors; scan speed is 1200 mm/s.",
+    "zh-TW": "實測參數：內半徑 24.837775 mm、外半徑 58.020875 mm、359,848 磁區；掃描速度採用 1200 mm/s。"
+  },
+  "Standard 74-minute CD": {
+    "zh-CN": "标准 74min CD",
+    "en": "Standard 74-minute CD",
+    "zh-TW": "標準 74min CD"
+  },
+  "ECMA-130/ISO/IEC 10149 standard speed of 1200 mm/s; 120 mm disc, approximately 74 minutes, with 333,000 sectors (24.5-56.8 mm).": {
+    "zh-CN": "ECMA-130／ISO/IEC 10149 标准速度 1200 mm/s；120 mm 盘、约 74 分钟，333,000 扇区（24.5–56.8 mm）。",
+    "en": "ECMA-130/ISO/IEC 10149 standard speed of 1200 mm/s; 120 mm disc, approximately 74 minutes, with 333,000 sectors (24.5-56.8 mm).",
+    "zh-TW": "ECMA-130／ISO/IEC 10149 標準速度 1200 mm/s；120 mm 光碟、約 74 分鐘，333,000 磁區（24.5–56.8 mm）。"
+  },
+  "Standard 12 cm single-layer DVD": {
+    "zh-CN": "标准 12cm 单层 DVD",
+    "en": "Standard 12 cm single-layer DVD",
+    "zh-TW": "標準 12cm 單層 DVD"
+  },
+  "ISO/IEC 16448 standard single-layer 120 mm DVD (DVD-5) data area: 24-58 mm, with 2,295,104 sectors.": {
+    "zh-CN": "ISO/IEC 16448 标准单层 120 mm DVD（DVD-5）数据区：24–58 mm，共 2,295,104 个扇区。",
+    "en": "ISO/IEC 16448 standard single-layer 120 mm DVD (DVD-5) data area: 24-58 mm, with 2,295,104 sectors.",
+    "zh-TW": "ISO/IEC 16448 標準單層 120 mm DVD（DVD-5）資料區：24–58 mm，共 2,295,104 個磁區。"
+  },
+  "Verbatim DVD-R AZO (43533) (measured)": {
+    "zh-CN": "Verbatim DVD-R AZO (43533)（实测）",
+    "en": "Verbatim DVD-R AZO (43533) (measured)",
+    "zh-TW": "Verbatim DVD-R AZO (43533)（實測）"
+  },
+  "Verified calibration parameters for Verbatim DVD-R AZO 43533: 23.9914606277-57.9648936579 mm, with 2,297,888 sectors and cubic track-pitch distribution.": {
+    "zh-CN": "Verbatim DVD-R AZO 43533 已验证标定参数：23.9914606277–57.9648936579 mm，共 2,297,888 个扇区；采用三次轨距分布。",
+    "en": "Verified calibration parameters for Verbatim DVD-R AZO 43533: 23.9914606277-57.9648936579 mm, with 2,297,888 sectors and cubic track-pitch distribution.",
+    "zh-TW": "Verbatim DVD-R AZO 43533 已驗證校準參數：23.9914606277–57.9648936579 mm，共 2,297,888 個磁區；採用三次軌距分布。"
+  },
+  "Standard 8 cm single-layer DVD": {
+    "zh-CN": "标准 8cm 单层 DVD",
+    "en": "Standard 8 cm single-layer DVD",
+    "zh-TW": "標準 8cm 單層 DVD"
+  },
+  "ISO/IEC 16448 standard single-layer 80 mm DVD data area: 24-38 mm, with 714,544 sectors.": {
+    "zh-CN": "ISO/IEC 16448 标准单层 80 mm DVD 数据区：24–38 mm，共 714,544 个扇区。",
+    "en": "ISO/IEC 16448 standard single-layer 80 mm DVD data area: 24-38 mm, with 714,544 sectors.",
+    "zh-TW": "ISO/IEC 16448 標準單層 80 mm DVD 資料區：24–38 mm，共 714,544 個磁區。"
+  },
+  "Standard 25 GB single-layer BD": {
+    "zh-CN": "标准 25GB 单层 BD",
+    "en": "Standard 25 GB single-layer BD",
+    "zh-TW": "標準 25GB 單層 BD"
+  },
+  "ISO/IEC 30190 standard single-layer BD-R data area: 24-58 mm, with 12,219,392 sectors.": {
+    "zh-CN": "ISO/IEC 30190 标准单层 BD-R 数据区：24–58 mm，共 12,219,392 个扇区。",
+    "en": "ISO/IEC 30190 standard single-layer BD-R data area: 24-58 mm, with 12,219,392 sectors.",
+    "zh-TW": "ISO/IEC 30190 標準單層 BD-R 資料區：24–58 mm，共 12,219,392 個磁區。"
+  },
+  "Ritek BD-R 10x (measured)": {
+    "zh-CN": "铼德 BD-R 10x（实测）",
+    "en": "Ritek BD-R 10x (measured)",
+    "zh-TW": "錸德 BD-R 10x（實測）"
+  },
+  "Measured parameters: inner radius 23.988221 mm, outer radius 58.023235 mm, and 12,219,392 sectors.": {
+    "zh-CN": "实测参数：内半径 23.988221 mm、外半径 58.023235 mm、12,219,392 扇区。",
+    "en": "Measured parameters: inner radius 23.988221 mm, outer radius 58.023235 mm, and 12,219,392 sectors.",
+    "zh-TW": "實測參數：內半徑 23.988221 mm、外半徑 58.023235 mm、12,219,392 磁區。"
+  },
+  "Verbatim BD-R (64099) (measured)": {
+    "zh-CN": "Verbatim BD-R (64099)（实测）",
+    "en": "Verbatim BD-R (64099) (measured)",
+    "zh-TW": "Verbatim BD-R (64099)（實測）"
+  },
+  "Measured parameters: inner radius 23.987042 mm, outer radius 57.987960 mm, and 12,219,392 sectors.": {
+    "zh-CN": "实测参数：内半径 23.987042 mm、外半径 57.987960 mm、12,219,392 扇区。",
+    "en": "Measured parameters: inner radius 23.987042 mm, outer radius 57.987960 mm, and 12,219,392 sectors.",
+    "zh-TW": "實測參數：內半徑 23.987042 mm、外半徑 57.987960 mm、12,219,392 磁區。"
+  },
+  "Custom Parameters (Unsaved)": {
+    "zh-CN": "自定义参数（未保存）",
+    "en": "Custom Parameters (Unsaved)",
+    "zh-TW": "自訂參數（未儲存）"
+  },
+  "Generation parameters were adjusted manually in the interface. Save them to the user preset JSON for long-term use.": {
+    "zh-CN": "生成参数已在界面中手动调整；如需长期保存，请写入用户预设 JSON。",
+    "en": "Generation parameters were adjusted manually in the interface. Save them to the user preset JSON for long-term use.",
+    "zh-TW": "產生參數已在介面中手動調整；如需長期儲存，請寫入使用者預設 JSON。"
+  },
+  "Disc Image Studio project|*.discproj": {
+    "zh-CN": "Disc Image Studio 工程|*.discproj",
+    "en": "Disc Image Studio project|*.discproj",
+    "zh-TW": "Disc Image Studio 專案|*.discproj"
+  },
+  "Fork.UnsavedChangesBeforeClosing": {
+    "zh-CN": "关闭",
+    "en": "closing",
+    "zh-TW": "關閉"
+  },
+  "Fork.UnsavedChangesBeforeReturningHome": {
+    "zh-CN": "返回主页",
+    "en": "returning home",
+    "zh-TW": "返回首頁"
+  },
+  "Fork.UnsavedChangesBeforeNewProject": {
+    "zh-CN": "新建工程",
+    "en": "creating a new project",
+    "zh-TW": "新增專案"
+  },
+  "。\n": {
+    "zh-CN": "。\n",
+    "en": ".\n",
+    "zh-TW": "。\n"
+  }
+}
