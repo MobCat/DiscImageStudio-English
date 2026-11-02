@@ -1,55 +1,55 @@
-# 辅助标定
+# Calibration assistant
 
-辅助标定按 **生成标定盘 → 照片矫正 → 曲线标定** 三步进行，界面上对应右栏的三张卡片。拍照时只需看清实体外缘、中心孔，以及十字线中的一条径向曲线。可以通过调整打光提高可见度，不要求涂黑，也不要求把光盘摆正。
+The calibration assistant runs in three steps — **create the calibration disc → rectify the photo → calibrate along the curve** — matching the three cards in the right-hand column. When photographing, all you need to see clearly is the physical outer edge, the centre hole, and one radial curve of the cross. Adjusting the lighting improves visibility; blackening the disc is not required, and neither is squaring the disc up.
 
-## 标定图案与输出
+## Calibration pattern and output
 
-在工程设置里设置绘图内外半径、扇区数、线速度或位长，再到辅助标定工作区展开“生成标定盘”，用“从当前参数建新标靶”创建图案。标定图案使用内置的 `target_slim.png`：九条细线同心圆和十字线。**先按生成外半径缩放整张原图，再裁切内外半径之间的刻录环带**，与普通 DVD 图片生成采用同一坐标映射。原图左右、上下边界分别对应生成外半径的负值和正值，圆的位置及线宽随外半径同比例缩放；内半径用于裁去中心区域。同心圆仅供观察，反推只使用选中的一条曲线。
+Set the artwork inner and outer radii, the sector count, and the linear velocity or bit length in Project Settings, then expand "Create Disc" in the Calibration Assistant workspace and use "Create Target from Current Parameters" to build the pattern. The calibration pattern uses the built-in `target_slim.png`: nine thin concentric circles plus a cross. **The whole source image is first scaled by the generated outer radius and then cropped to the recording band between the inner and outer radii**, using the same coordinate mapping as ordinary DVD image generation. The left/right and top/bottom edges of the source image correspond to the negative and positive generated outer radius, and the circle positions and line widths scale proportionally with the outer radius; the inner radius crops away the centre. The concentric circles are only for visual reference — the solve uses just the one selected curve.
 
-界面中的 120 mm 盘面背景用于预览，不是原图的固定物理尺寸。照片矫正所选的 12 cm / 8 cm 实体盘片规格也只用于恢复照片尺度，不改变已保存的图案生成映射。
+The 120 mm disc background in the interface is for previewing and is not a fixed physical size of the source image. The 12 cm / 8 cm physical disc size chosen for photo rectification only restores the photo's scale; it does not change the saved pattern generation mapping.
 
-创建图案会固定生成参数和 CD 交织设置，并清除上一张标定盘的照片与输入。主页面后续改参不会改变已有记录的含义。每张盘都应使用它生成时保存的记录。
+Creating a pattern fixes the generation parameters and the CD interleaving setting and clears the previous calibration disc's photo and input. Changing parameters on the main pages afterwards does not change the meaning of an existing record. Every disc should use the record saved when it was generated.
 
-- CD 输出 `.wav`（附 `.cue`）或 `.raw`；DVD 与 BD 输出纯绘图 `.iso`。BD 目标覆盖完整单层数据区，记录绘图起止扇区、3T/6T 极性与 ISO 时间戳。
-- 生成文件时同时保存同名 `.calibration.json`。流式刻录会先保存标定记录，再跳到刻录工作区（来源已固定为本图案）选择设备并确认。
-- 预览、PNG 导出、文件和流式输出使用同一张内置图案与生成外半径映射，保留原图的灰阶边缘。PNG 按原始 2400 × 2400 像素导出裁切后的图案，不加入预览背景边距，也不把预览截图再次缩放。正式刻录请使用本页的生成或流式入口，保持图案与保存的生成参数一致。
+- CD outputs `.wav` (with `.cue`) or `.raw`; DVD and BD output an artwork-only `.iso`. A BD target covers the complete single-layer data area and records the artwork start/end sectors, the 3T/6T polarity and the ISO timestamp.
+- Generating the file also saves a matching `.calibration.json`. Streaming burn saves the calibration record first, then jumps to the Burn workspace (with the source already fixed to this pattern) to select a device and confirm.
+- Preview, PNG export, file output and streaming output all use the same built-in pattern and generated outer-radius mapping, preserving the source image's grayscale edges. PNG export writes the cropped pattern at its original 2400 × 2400 pixels and adds neither preview background margins nor a re-scaled preview screenshot. For real burning use this page's generation or streaming entry points so the pattern stays consistent with the saved generation parameters.
 
-## 第一步：照片矫正
+## Step 1: rectify the photo
 
-1. 导入照片或扫描图，选择标准 12 cm 光盘或 8 cm 小盘。图像会缩小到适合交互的尺寸，并保存在记录里。
-2. 将两组控制点拖到 **光盘实体外缘** 和 **中心孔边缘**。初始轮廓只供调整，不代表已经识别准确；不要把刻录区边界、透明塑料环或投影当作实体边缘。
-3. 点击“计算矫正”，查看正视预览。需要修正时关闭预览，继续拖边界；满意后确认，进入曲线标定。
+1. Import a photo or scan and choose a standard 12 cm disc or an 8 cm mini disc. The image is shrunk to a size that is practical for interaction and stored in the record.
+2. Drag the two groups of control points to the **disc's physical outer edge** and the **centre-hole edge**. The initial contour is only a starting point and does not mean the edges have already been detected correctly; do not treat the recording-area boundary, the clear plastic ring or the projection as the physical edge.
+3. Click "Calculate Rectification" and check the face-on preview. If it needs correcting, close the preview and keep dragging the boundaries; once satisfied, confirm and move on to curve calibration.
 
-程序联合拟合同一平面的两条同心圆投影，恢复盘心、尺度和透视关系。尺度来自所选光盘规格与标准中心孔尺寸，不需要手动测量。两条椭圆的几何中心不能直接当作盘心，单独拉圆一个椭圆也不能完全消除透视形变。
+The program fits the projections of two concentric circles on the same plane jointly, recovering the disc centre, scale and perspective relationship. The scale comes from the selected disc size and the standard centre-hole dimension, so no manual measurement is needed. The geometric centre of the two ellipses cannot be used as the disc centre directly, and fitting a single ellipse to a circle does not fully remove the perspective distortion.
 
-此步骤不使用“十字线必须笔直或垂直”的约束，因而保留需要标定的刻录弯曲。当前矫正处理拍摄角度引起的透视形变，不另外估计镜头径向畸变；严重广角畸变、遮挡和误选边界会降低结果可靠性。
+This step does not assume the cross must be straight or vertical, so the recording bow that needs calibrating is preserved. The current rectification handles perspective distortion caused by camera angle but does not estimate radial lens distortion separately; severe wide-angle distortion, occlusion, or wrongly chosen boundaries reduce how reliable the result is.
 
-## 第二步：单条曲线标定
+## Step 2: calibrate along a single curve
 
-1. 沿一条清楚的径向曲线，从内向外均匀点击位置，覆盖靠内、中间和靠外的部分。CD 或只修正半径至少需要 6 个点，建议 20 个以上；DVD 三次轨距拟合至少需要 12 个不同半径的点，并覆盖生成环带径向宽度的 60%。点距过大使相邻点转角接近半圈时，程序会拒绝并提示补点。不需要对应同心圆交点，也不用辨认是哪一条十字臂。
-2. 拖动已有点修正，点击空白位置补点，按 Delete 删除选中点。所有点都属于这一条曲线。圆环及其他十字臂不参与拟合，不能中途切换到另一条臂。
-3. 点击“反推参数”。程序按点的径向顺序跟踪曲线，拟合内外半径，并将盘面整体转角作为独立量处理。照片里确认可见的点全部参与，不按预设的刻录环带删除或截断，也不会把端点强行移动到预设边界。输入点仍须位于实际盘面上。默认的自动范围从 ±0.02 mm 开始；最优结果落在范围边界时，会自动扩大到 ±0.1、±0.5 mm 等更大范围再算，避免把被边界截住的参数当成测量结果。手动范围收在折叠的“搜索范围”项里，只用于约束诊断；两种模式都不改变曲线模型。
-4. 选择候选，检查照片上叠加的整条预测曲线。青色点与虚线是实拍输入，橙色线是参数预测；预测覆盖实际描点的范围。它应保留参数所预测的弯曲，与照片上的点比较，而不是把理想直线或一条任意穿点的样条当作参数拟合结果。少量点吻合并不能证明中间没有多绕一圈，弯曲明显或点间间隔大时应补点。明显偏离预测的点会标成红色并计入“偏离较大”图例；状态行同时给出平均偏差、最大偏差和自动扩大的范围。平均偏差超过 0.35 mm 或最大偏差超过 0.8 mm 的候选不能应用，应先修正标红点或补点。
-5. 确认预测曲线吻合后应用参数。应用只更新对应 CD / DVD / BD 参数（BD 同时写回内外半径、总扇数与极性），保留原标定盘快照，不把拍照转角写入刻录起始角。应用后左侧工程头会亮起“参数已更新”提示，表示本工程几何已改变。
+1. Click evenly spaced positions along one clear radial curve, from the inside outward, covering the inner, middle and outer parts. CD and radius-only corrections need at least 6 points and 20 or more are recommended; DVD cubic track-pitch fitting needs at least 12 points at different radii covering 60% of the generated band's radial width. When the points are so far apart that the turn angle between adjacent points approaches half a turn, the program refuses and asks for more points. You do not need to match the concentric circle intersections, nor to identify which arm of the cross it is.
+2. Drag an existing point to correct it, click an empty spot to add one, and press Delete to remove the selected point. Every point belongs to this one curve. The rings and the other cross arms do not take part in the fit, and you cannot switch to another arm midway.
+3. Click "Solve Parameters". The program follows the curve in the radial order of the points, fits the inner and outer radii, and handles the disc's overall rotation as a separate quantity. Every point you can see confirmed in the photo takes part: points are not dropped or truncated using a preset recording band, and endpoints are not forced onto a preset boundary. The input points must still lie on the actual disc surface. The default automatic range starts at ±0.02 mm; when the best result lands on the range boundary it automatically widens to ±0.1 mm, ±0.5 mm and so on before recomputing, so parameters clipped by the boundary are not mistaken for a measurement. The manual range lives in the collapsed "Search Range" item and is only for constraining diagnostics; neither mode changes the curve model.
+4. Pick a candidate and check the whole predicted curve overlaid on the photo. The cyan points and dashed line are the photographed input, the orange line is the parameter prediction, and the prediction covers the range of the actually traced points. It should keep the bow the parameters predict — compare it with the points in the photo — rather than treating an ideal straight line or a spline drawn through the points as the result of a parameter fit. A few points matching does not prove that the curve does not wind an extra turn in between, so add points where the curvature is pronounced or the gaps are large. Points that clearly deviate from the prediction are marked red and counted in the "Large Deviation" legend; the status line also reports the mean deviation, the maximum deviation and the automatically widened range. A candidate with a mean deviation above 0.35 mm or a maximum deviation above 0.8 mm cannot be applied — correct the red points or add points first.
+5. Once the predicted curve matches, apply the parameters. Applying only updates the matching CD / DVD / BD parameters (for BD it writes back the inner and outer radii, the total sector count and the polarity), keeps the original calibration disc snapshot, and never writes the photo's rotation into the burn start angle. Afterwards the project header shows the "Parameters updated" badge on the left, indicating that this project's geometry has changed.
 
-滚轮缩放、右键平移仅改变视图，不改变输入数据。“查看刻录图案”用于检查原图，不可在该预览上输入照片点。
+Mouse wheel zoom and right-button pan only change the view, not the input data. "View Burn Pattern" is for checking the source image; you cannot enter photo points on that preview.
 
-生成时的内外半径是轨道模型的参数基准，不是照片观测区域的硬限制。单线拟合会在观测范围内连续计算相位；观测点略超出预设环带时，不必为使程序通过而删除真实点或扩大参数搜索范围。正式刻录仍使用设置的内外半径作为输出边界。
+The inner and outer radii used at generation time are the parameter basis of the track model, not a hard limit on the photographed observation region. Single-curve fitting computes the phase continuously over the observed range; when the observed points extend slightly beyond the preset band there is no need to delete real points or widen the parameter search range just to make the program pass. Real burning still uses the configured inner and outer radii as the output boundary.
 
-DVD 支持轨距随归一化半径 `x=(r-ri)/(ro-ri)` 呈三次多项式变化：`p(x)=p0*(1+c1*x+c2*x²+c3*x³)`。完整模型有四个系数：`p0` 和 `p0*c1`、`p0*c2`、`p0*c3`。容量、位长及内外半径固定后，总轨长约束自动确定 `p0`，因此拟合三个相对形状系数和两个半径。零系数表示恒定轨距。生成快照、预测叠线和应用参数都保留这些系数。BD 使用恒定轨距（名义 0.320 µm），并沿正半径连续延拓观测曲线；由于每毫米圈数远高于 CD/DVD，窄搜索可能给出高残差内部解，界面用残差门槛阻止应用，并保留候选供检查。
+DVD supports a track pitch that varies as a cubic polynomial in the normalised radius `x=(r-ri)/(ro-ri)`: `p(x)=p0*(1+c1*x+c2*x²+c3*x³)`. The full model has four coefficients: `p0`, `p0*c1`, `p0*c2` and `p0*c3`. Once the capacity, bit length and inner/outer radii are fixed, the total track-length constraint determines `p0` automatically, so the fit covers the three relative shape coefficients and the two radii. Zero coefficients mean a constant track pitch. The generation snapshot, the prediction overlay and the applied parameters all keep these coefficients. BD uses a constant track pitch (nominally 0.320 µm) and continues the observed curve along positive radii; because there are far more turns per millimetre than with CD/DVD, a narrow search can produce a high-residual interior solution, so the interface blocks it with a residual threshold and keeps the candidate for inspection.
 
-点数或覆盖范围不足时，程序保留现有轨距形状、只拟合半径并提示补点。三次拟合仍需检查整条预测线，尤其是点间是否多绕了一圈。得到候选不等于真实盘片的四个物理系数已被唯一测出；固定线密度下，照片尺度、半径和轨距形状可能相互补偿，残留镜头畸变也可能被模型吸收。界面保留失配候选供检查，明显高残差的结果不允许应用。
+When there are too few points or the coverage is too narrow, the program keeps the existing track-pitch shape, fits only the radii, and asks for more points. Cubic fitting still requires checking the whole predicted line, especially whether it winds an extra turn between points. Obtaining a candidate does not mean the real disc's four physical coefficients have been uniquely measured; at a fixed linear density the photo scale, the radii and the track-pitch shape can compensate for one another, and residual lens distortion can also be absorbed by the model. The interface keeps mismatched candidates available for inspection and refuses to apply results with an obviously high residual.
 
-## 修改与保存
+## Editing and saving
 
-返回第一步可以检查原照片。修改边界或盘片规格后，矫正、描线和拟合结果都会失效，需要重新完成两步。修改任意曲线点或搜索范围后，旧拟合和轮廓确认也会失效。
+Going back to step 1 lets you check the original photo. After changing the boundaries or the disc size, the rectification, tracing and fitting results all become invalid and both steps must be completed again. After changing any curve point or the search range, the previous fit and the contour confirmation also become invalid.
 
-标定记录保存生成快照、缩小后的原照片、轮廓控制点、光盘规格和所有曲线点；不依赖原照片路径。重新打开时，根据保存的边界恢复矫正，可继续描线或重新计算。拟合候选需重新计算。
+The calibration record stores the generation snapshot, the shrunk original photo, the contour control points, the disc size and all curve points; it does not depend on the original photo's path. When reopened, the rectification is restored from the saved boundaries and you can keep tracing or recompute. Fit candidates have to be recomputed.
 
-当前图案为 schema 6，只接受当前版本记录，不迁移旧梳形图案。需要重新创建图案并使用对应的刻录盘。
+The current pattern is schema 6, which accepts only current-version records and does not migrate the older comb pattern. Create a new pattern and use the matching burned disc.
 
-## 验证范围
+## Verification scope
 
-自动检查覆盖内置原图与像素采样一致性、CD/DVD/BD 文件与流式输出一致性、BD 绘图范围与极性、合成透视恢复、退化边界与取消、单条曲线反推、超出预设环带的完整曲线、预测方向与曲率、交互坐标转换、拖点和插点、会话恢复及失效规则。刻录测试只写内存流，不访问刻录设备。
+Automated checks cover consistency between the built-in source image and pixel sampling, consistency between CD/DVD/BD file and streaming output, the BD artwork range and polarity, joint perspective recovery, degenerate boundaries and cancellation, single-curve solving, full curves extending beyond the preset band, prediction direction and curvature, interactive coordinate conversion, dragging and inserting points, session restoration and the invalidation rules. Burning tests write only to memory streams and never access a recording device.
 
-软件与合成测试不能证明真实盘面的可见度、镜头状态、描点精度或最终物理标定精度。应用前需要对照自己的照片检查整条预测曲线。
+Software and synthetic tests cannot prove the visibility on a real disc surface, the state of the lens, the precision of the traced points, or the final physical calibration accuracy. Before applying, check the whole predicted curve against your own photo.

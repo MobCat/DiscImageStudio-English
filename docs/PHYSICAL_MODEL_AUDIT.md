@@ -1,111 +1,111 @@
-# CD / DVD 生成物理模型复核
+# Review of the CD / DVD generation physical model
 
-复核日期：2026-09-21。对象为 `DiscImageStudio-GitHub` 当前工作区（包含尚未提交的标定实现），基准提交 `6c55a18`。本次只做标准核对、源码审计和独立数值验证，未修改生成器、预设或刻录行为。
+Review date: 2026-09-21. The subject was the `DiscImageStudio-GitHub` working copy at the time (including the not-yet-committed calibration implementation), baseline commit `6c55a18`. This round did only standard cross-checking, source auditing and independent numerical verification; no generator, preset or burning behaviour was changed.
 
-## 结论
+## Conclusion
 
-基础螺旋公式和 DVD 扇区长度未发现计算错误。但是，当前模型不能凭标准名义参数精确预测真实盘面的角度：默认 CD 参数存在几何一致性问题；固定线密度的单线标定会把密度误差吸收到半径；CD 交织的有限流边界和参考时序也没有进入几何模型。还缺少刻录盘种与生成模型的匹配检查。
+No calculation error was found in the basic spiral formulas or the DVD sector length. The current model, however, cannot accurately predict the angle on a real disc surface from nominal standard parameters: the default CD parameters have a geometric consistency problem; single-curve calibration at fixed linear density absorbs density error into the radii; and neither the finite-stream boundary of CD interleaving nor the reference timing enters the geometric model. There is also no check that the type of recordable disc matches the generation model.
 
-不能仅凭这次审计确定某张实盘弯曲的唯一原因，也不应把 DVD 位长直接改成另一名义值作为修复。
+This audit alone cannot determine the sole cause of the bowing on any particular real disc, and the DVD bit length should not simply be changed to a different nominal value as a fix.
 
-## 标准依据与适用范围
+## Standards basis and scope
 
-- 官方 [ECMA-359 第一版，2004](https://ecma-international.org/wp-content/uploads/ECMA-359_1st_edition_december_2004.pdf)：单层 DVD-R，主要检查 §§10.7–10.9、18–23、24.2。核对了 PDF 第 28、29、52、56 页原页。
-- 官方 [ECMA-267 第三版，2001](https://ecma-international.org/wp-content/uploads/ECMA-267_3rd_edition_april_2001.pdf)：DVD-ROM，主要检查 §§10.6、18–21。不能用它取代全部可刻录介质的规则。
-- 官方 [ECMA-130 第二版，1996](https://ecma-international.org/wp-content/uploads/ECMA-130_2nd_edition_june_1996.pdf)：CD-ROM 几何与公共 CIRC 编码参考，§§8.6、11.3–11.4、19.4、附录 C。音轨并不等于 CD-ROM 数据轨。
-- 官方 [ECMA-394 第一版，2010](https://ecma-international.org/wp-content/uploads/ECMA-394_1st_edition_december_2010.pdf)：CD-R，多速录制、预刻槽与 Red Book 兼容关系，§§1.2、2.4–2.5。此文件通过引用 Red Book 规定部分几何要求，并没有直接重列完整的 CD 几何表。
+- Official [ECMA-359, 1st edition, 2004](https://ecma-international.org/wp-content/uploads/ECMA-359_1st_edition_december_2004.pdf): single-layer DVD-R, mainly checking §§10.7–10.9, 18–23 and 24.2. The original pages 28, 29, 52 and 56 of the PDF were checked.
+- Official [ECMA-267, 3rd edition, 2001](https://ecma-international.org/wp-content/uploads/ECMA-267_3rd_edition_april_2001.pdf): DVD-ROM, mainly checking §§10.6 and 18–21. It cannot replace the rules for all recordable media.
+- Official [ECMA-130, 2nd edition, 1996](https://ecma-international.org/wp-content/uploads/ECMA-130_2nd_edition_june_1996.pdf): CD-ROM geometry and the common CIRC encoding reference, §§8.6, 11.3–11.4, 19.4 and Annex C. An audio track is not the same as a CD-ROM data track.
+- Official [ECMA-394, 1st edition, 2010](https://ecma-international.org/wp-content/uploads/ECMA-394_1st_edition_december_2010.pdf): CD-R, multi-speed recording, pre-groove and Red Book compatibility, §§1.2 and 2.4–2.5. That document states some geometric requirements by reference to the Red Book and does not restate the complete CD geometry table directly.
 
-ECMA-359 的关键约束如下，均为标准要求，不能视为某一张盘的实测值：
+The key ECMA-359 constraints are below; all are standard requirements and cannot be read as measured values for any particular disc:
 
-| 项目 | 约束 | 条款 |
+| Item | Constraint | Clause |
 |---|---|---|
-| 数据起点半径 | 23.9–24.0 mm | 10.7.1.2，原文为直径 48.0 mm，公差 −0.2/+0.0 mm |
-| 12 cm 盘数据终点半径 | 不超过 58.0 mm | 10.7.1.2 |
-| 平均螺距 | 0.74 ± 0.01 μm | 10.8 |
-| 局部螺距偏差 | 相对 0.74 μm 最大 ±0.03 μm | 10.8 |
-| 平均通道位长 | 133.3 ± 1.4 nm | 10.9 |
-| 数据区首 PSN | 0x030000，物理扇区连续无间隙 | 24.2 |
+| Data start radius | 23.9–24.0 mm | 10.7.1.2, stated as a 48.0 mm diameter with −0.2/+0.0 mm tolerance |
+| 12 cm disc data end radius | no more than 58.0 mm | 10.7.1.2 |
+| Average track pitch | 0.74 ± 0.01 μm | 10.8 |
+| Local track-pitch deviation | maximum ±0.03 μm relative to 0.74 μm | 10.8 |
+| Average channel bit length | 133.3 ± 1.4 nm | 10.9 |
+| First PSN of the data area | 0x030000, physical sectors contiguous with no gaps | 24.2 |
 
-ECMA-267 的数据起点直径下限与 DVD-R 不同：其 §10.6.1 是 48.0 mm，公差 −0.4/+0.0 mm。不能把两份标准的起点容差混用。
+ECMA-267's lower bound for the data start diameter differs from DVD-R's: §10.6.1 gives 48.0 mm with a −0.4/+0.0 mm tolerance. The start tolerances of the two standards must not be mixed.
 
-## 已确认正确的部分
+## Parts confirmed correct
 
-DVD 的每扇区通道位数是 `13 × 2 × (32 + 1456) = 38688`，每 16 扇区 ECC 块为 619008 位。`DvdEccBlockEncoder.cs:8` 使用的数值正确；扇区偏移、同步帧和 PO 行交织未发现通用长度漏算。
+A DVD sector holds `13 × 2 × (32 + 1456) = 38688` channel bits, i.e. 619008 bits per 16-sector ECC block. `DvdEccBlockEncoder.cs:8` uses the correct value; no general length miscalculation was found in the sector offset, sync frames or PO row interleaving.
 
-当前轨长为：
+The current track length is:
 
 ```text
 CD:  L = (N / 75) × v                         [mm]
 DVD: L = N × 38688 × channelBitLengthNm × 10^-6 [mm]
 ```
 
-`CdDiscParameters.cs:59–75` 使用等螺距的面积近似，`ArchimedeanSpiral.cs:33–70,115–120` 使用精确弧长。其近似关系为 `pitch = π(ro²−ri²)/L`、`θ = 2L(r−ri)/(ro²−ri²)`。CD 近似与精确螺旋的整盘角差约 0.000135°，不能解释肉眼明显的弯曲。DVD 的精确弧长反解、纳米到毫米换算和默认图像坐标方向也未发现错误。
+`CdDiscParameters.cs:59–75` uses the equal-pitch area approximation, while `ArchimedeanSpiral.cs:33–70,115–120` uses the exact arc length. The approximate relations are `pitch = π(ro²−ri²)/L` and `θ = 2L(r−ri)/(ro²−ri²)`. The whole-disc angle difference between the CD approximation and the exact spiral is about 0.000135°, which cannot explain a bow visible to the eye. No error was found in the DVD exact-arc-length inverse solve, the nanometre-to-millimetre conversion, or the default image coordinate direction.
 
-DVD-R 的 linking 用于特定增量追加情形；§24.2 明确扇区连续。没有依据给每个 ECC 块统一追加一段所谓隐藏空隙。
+DVD-R linking serves specific incremental-append situations; §24.2 states explicitly that sectors are contiguous. There is no basis for appending a supposedly hidden gap to every ECC block.
 
-## 发现一：默认 CD 80 分钟预设的参数组合不合理
+## Finding 1: the default CD 80-minute preset's parameter combination is implausible
 
-`src/DiscImageStudio.Core/Presets/built-in-disc-presets.json:6–12` 同时使用 359849 扇区、24.5–56.8 mm、1200 mm/s。按实际生成公式反算：
+`src/DiscImageStudio.Core/Presets/built-in-disc-presets.json:6–12` uses 359849 sectors, 24.5–56.8 mm and 1200 mm/s at the same time. Solving back through the actual generation formulas:
 
-| 预设 | 隐含螺距（μm） |
+| Preset | Implied track pitch (μm) |
 |---|---:|
-| CD 80 分钟默认 | 1.432856 |
-| CD 74 分钟默认 | 1.548384 |
-| 铼德水蓝 CD 实测半径预设 | 1.492598 |
-| Verbatim CD 实测半径预设 | 1.500257 |
-| DVD 12 cm 默认 | 0.739837 |
-| Verbatim DVD-R 实测半径预设 | 0.738304 |
+| CD 80-minute default | 1.432856 |
+| CD 74-minute default | 1.548384 |
+| Ritek Aqua CD measured-radius preset | 1.492598 |
+| Verbatim CD measured-radius preset | 1.500257 |
+| DVD 12 cm default | 0.739837 |
+| Verbatim DVD-R measured-radius preset | 0.738304 |
 
-ECMA-130 §11.3 的螺距范围是 1.5–1.7 μm；§11.4 的基准扫描速度范围是 1200–1400 mm/s。CD80 默认组合明显不能作为符合该几何范围的通用精确预设。其 24.5 mm 起点也不能直接等同于 §8.6 的用户数据区起点（24.8–25.0 mm）。
+ECMA-130 §11.3 gives a track pitch range of 1.5–1.7 μm, and §11.4 gives a reference scan velocity range of 1200–1400 mm/s. The CD80 default combination clearly cannot serve as a general accurate preset within that geometric range. Its 24.5 mm start also cannot be equated directly with the §8.6 user data area start (24.8–25.0 mm).
 
-这是对软件参数组合的检查，不是据此判定用户的 CD-R 盘片不合格。标为实测的预设仍固定采用 1200 mm/s，并不代表线密度也经过测量。不能仅为落入标准范围而擅改用户实测半径。
+This is a check of the software's parameter combination, not a judgement that the user's CD-R discs are out of spec. Presets marked as measured still fix the scan velocity at 1200 mm/s, which does not mean the linear density was measured too. User-measured radii must not be altered just to fall inside the standard range.
 
-## 发现二：标准容差远大于绘图所需的累计角度精度
+## Finding 2: standard tolerances are far larger than the cumulative angular accuracy artwork needs
 
-`ImageTargetMapper.cs:58–77`、`FastDispersionImageWriter.cs:345–365` 用容量、两个半径和固定位长反求恒定螺距。DVD 默认参数产生约 45956.06 圈。标准允许局部螺距变化，且 58 mm 是上限，因此这些输入只能构成一个初始模型。
+`ImageTargetMapper.cs:58–77` and `FastDispersionImageWriter.cs:345–365` solve for a constant track pitch from the capacity, the two radii and a fixed bit length. The DVD defaults produce about 45956.06 turns. The standard allows local track-pitch variation, and 58 mm is an upper bound, so these inputs can only form an initial model.
 
-数值敏感性（均为改变一个输入、其余保持不变的模型对照）：
+Numerical sensitivity (each row changes one input with everything else held constant, as a model comparison):
 
-- DVD 位长改变 10 ppm，整盘累计角度改变约 165.44°。
-- DVD 位长由 133.33 改为 133.3 nm，累计角度改变约 10.34037 圈。
-- DVD 内半径或外半径增加 0.001 mm，累计角度改变约 −201.76°。
+- Changing the DVD bit length by 10 ppm changes the whole-disc cumulative angle by about 165.44°.
+- Changing the DVD bit length from 133.33 to 133.3 nm changes the cumulative angle by about 10.34037 turns.
+- Increasing the DVD inner or outer radius by 0.001 mm changes the cumulative angle by about −201.76°.
 
-上述值是模型相位差，不是已测得的实盘误差。133.33 nm 在标准容差内；133.3 nm 也不是每张盘的真实精确位长。盲目替换名义值可能显著改变生成结果。
+Those values are model phase differences, not measured errors on a real disc. 133.33 nm is inside the standard tolerance; 133.3 nm is also not the truly exact bit length of every disc. Blindly substituting a nominal value can change the generation result significantly.
 
-## 发现三：单条径向线不能独立确认半径和线密度
+## Finding 3: a single radial line cannot independently confirm the radii and the linear density
 
-`CalibrationTarget.cs:468–473` 固定线速度／位长，`CalibrationCrossFitter.cs:73` 只拟合两个半径和整体旋转；当前流程不使用同心圆的源半径对应关系。
+`CalibrationTarget.cs:468–473` fixes the linear velocity / bit length, and `CalibrationCrossFitter.cs:73` fits only the two radii and the overall rotation; the current flow does not use the concentric circles' source-radius correspondence.
 
-独立反例：生成模型为 DVD `(ri=24, ro=58, bit=133.33)`，假定真实模型为 `(24,58,133.3)`。固定拟合位长仍为 133.33，只将候选半径改为约 `(24.00540257,58.01305620)`，再调整整体旋转，即可在 25–57 mm 范围几乎完全复现同一条弯曲线（2049 点精确弧长计算的最大相位残差约 2.04×10^-10 rad）。候选在默认 ±0.02 mm 搜索范围内。这是解析构造候选后的前向验证，没有声称当前优化器必然返回这组候选。
+An independent counter-example: with the generation model for DVD `(ri=24, ro=58, bit=133.33)`, assume the real model is `(24,58,133.3)`. Keeping the fitted bit length at 133.33 and changing only the candidate radii to about `(24.00540257,58.01305620)`, then adjusting the overall rotation, reproduces the same bowed line almost exactly across 25–57 mm (maximum phase residual about 2.04×10^-10 rad from an exact 2049-point arc-length computation). The candidate lies inside the default ±0.02 mm search range. This is a forward verification of an analytically constructed candidate; it does not claim the current optimiser necessarily returns that candidate.
 
-因此低残差可能只是把位长误差解释成半径误差。现功能可以获得有用的补偿参数，但结果应理解为“固定线密度假设下的等效参数”。若要确认真实物理半径与密度，需要加入已知源半径的圆环、已知数据位置或独立边界测量；单纯多开放一个拟合参数仍不能解决信息不足。
+A low residual can therefore simply be reinterpreting a bit-length error as a radius error. The current feature produces useful compensation parameters, but the result should be read as "equivalent parameters under the fixed-linear-density assumption". Confirming the true physical radii and density requires adding rings of known source radius, known data positions or an independent boundary measurement; merely opening one more fitted parameter still does not fix the lack of information.
 
-## 发现四：CD 交织补偿有有限流边界效应，物理时序原点待验证
+## Finding 4: the CD interleaving compensation has a finite-stream boundary effect, and the physical timing origin is unverified
 
-`CddaInterleaver.cs:8–16` 的延迟表与 ECMA-130 图 C.4 的数据路径一致，不是错误的重复交织。独立标签仿真把现有补偿后 PCM 再送入标准正向 CIRC 的 24 个数据路径：10 扇区测试中 20856 个稳态数据位置全部一致，但组合结果是目标图案整体延后 111 帧。
+The delay table in `CddaInterleaver.cs:8–16` matches the data paths of ECMA-130 Figure C.4 and is not an incorrect repeated interleaving. An independent label simulation fed the existing compensated PCM into the standard forward CIRC's 24 data paths: all 20856 steady-state data positions agreed in a 10-sector test, but the combined result lags the target pattern by 111 frames overall.
 
-需要严格区分两件事：
+Two things must be kept strictly apart:
 
-- **确定的有限流现象：**初始化产生 1332 个零占位字节；末端分散于最后 108 帧的 1332 个目标字节没有发出。`CddaInterleaver.cs:46–55` 的 Flush 只处理扇区尾部，整扇区输入时不排空环形缓冲。这会影响图案边界。
-- **有条件的物理偏移：**111 帧是图 C.4 参考时序下的组合延迟，约 15.102 ms，1200 mm/s 下约 18.122 mm 弧长。如果未由刻录链路的时序原点抵消，角差随半径改变，无法只用起始角消除。尚未测量其相对 ATIP、INDEX 01 和实盘数据起点的关系，因此不能把它直接宣称为已经证实的实盘偏移。
+- **A definite finite-stream phenomenon:** initialisation produces 1332 zero placeholder bytes; 1332 target bytes scattered across the last 108 frames are never emitted. The Flush in `CddaInterleaver.cs:46–55` handles only the sector tail and does not drain the ring buffer on whole-sector input. This affects the pattern boundary.
+- **A conditional physical offset:** the 111 frames is the combined delay under the Figure C.4 reference timing, about 15.102 ms, or about 18.122 mm of arc length at 1200 mm/s. Unless it is cancelled by the timing origin of the burning chain, the angular difference varies with radius and cannot be removed with the start angle alone. Its relation to ATIP, INDEX 01 and the real disc's data start has not been measured, so it must not be claimed directly as a confirmed real-disc offset.
 
-`CdTrackGenerator.cs:229–246` 按未加入上述时序的 globalByte 采样，几何标定同样不包括这一级编码。现有兼容说明也已声明预览不模拟完整 CIRC/EFM。需补充端到端物理时序验证，不能仅依据同源生成与预览一致就证明盘面位置正确。
+`CdTrackGenerator.cs:229–246` samples by `globalByte` without the timing above, and geometric calibration likewise excludes that encoding stage. The existing compatibility notes already state that the preview does not simulate complete CIRC/EFM. End-to-end physical timing verification is still needed; agreement between generation and preview from the same source does not by itself prove the position on the disc surface is correct.
 
-## 发现五：刻录介质类型没有与模型匹配
+## Finding 5: the recordable media type is not matched to the model
 
-`WindowsImapiBurner.cs:151–166,377–390` 只检查 IMAPI 支持、空白状态及容量，没有查询实际物理盘种。生成器却采用单层 ID（`DvdDataFrameBuilder.cs:41`）和单层单向螺旋。
+`WindowsImapiBurner.cs:151–166,377–390` checks only IMAPI support, blank state and capacity, and never queries the actual physical media type. The generator, however, uses a single-layer ID (`DvdDataFrameBuilder.cs:41`) and a single-layer one-way spiral.
 
-这缺少对双层 DVD、DVD-RAM 等不同物理格式的主动拦截。IMAPI 能写入某种介质，不代表当前绘图模型适用；实际是否能进入写入仍取决于设备和状态。双层的层切换、第二层方向及位长未建模。
+This lacks active rejection of different physical formats such as dual-layer DVD and DVD-RAM. IMAPI being able to write to some media does not mean the current artwork model applies; whether writing can actually start still depends on the device and its state. Dual-layer layer switching, the second layer's direction and its bit length are not modelled.
 
-可用微软的 [CurrentPhysicalMediaType](https://learn.microsoft.com/en-us/windows/win32/api/imapi2/nf-imapi2-idiscformat2data-get_currentphysicalmediatype) 与 [物理介质枚举](https://learn.microsoft.com/en-us/windows/win32/api/imapi2/ne-imapi2-imapi_media_physical_type) 做匹配检查。
+Microsoft's [CurrentPhysicalMediaType](https://learn.microsoft.com/en-us/windows/win32/api/imapi2/nf-imapi2-idiscformat2data-get_currentphysicalmediatype) and the [physical media enumeration](https://learn.microsoft.com/en-us/windows/win32/api/imapi2/ne-imapi2-imapi_media_physical_type) can be used for the matching check.
 
-## 建议的修正顺序
+## Suggested order of fixes
 
-1. 为预设增加隐含螺距检查，区分标准初值、实测值和补偿所得值；优先处理 CD80 默认组合。明确起止半径对应哪个数据位置，并把绘图裁切范围与轨道锚点分开。
-2. 核实 CD 交织、音轨起点及刻录链路的联合时序；再修正采样偏移和头尾策略，保持最终扇区数不变。
-3. 给标定增加独立的径向或数据位置约束。若实测残差仍有系统性局部弯曲，再评估变化螺距／相位修正模型。
-4. 写入前检查实际介质类型及容量与所选模型一致。
+1. Add an implied track-pitch check to presets, distinguishing standard initial values, measured values and values obtained by compensation; deal with the CD80 default combination first. State clearly which data position the start and end radii refer to, and separate the artwork crop range from the track anchor.
+2. Verify the joint timing of CD interleaving, the audio track start and the burning chain; then correct the sampling offset and the head/tail strategy while keeping the final sector count unchanged.
+3. Add an independent radial or data-position constraint to calibration. Only if the measured residual still shows systematic local bowing should a varying-track-pitch/phase correction model be evaluated.
+4. Check before writing that the actual media type and capacity match the selected model.
 
-本次没有进行实盘刻录或光学亮度测量。验证包括标准原文与原页、公式复算、精确螺旋数值对照、参数不可辨识反例及 CIRC 数据路径标签仿真；没有将这些检查扩展声称为完整光学仿真或实盘精度认证。
+No real-disc burning or optical brightness measurement was performed here. Verification covered the standard text and original pages, formula recomputation, exact-spiral numerical comparison, the parameter-unidentifiability counter-example and the CIRC data-path label simulation; these checks are not extended or claimed to be a complete optical simulation or real-disc accuracy certification.
 
-审计复现材料位于工作区根目录 `tmp/standards-audit/`：`circ-audit.py`、`circ-audit-result.json`、`geometry-audit.py`、`geometry-audit-result.json`，以及两份用户 PDF 的提取文本与关键原页。
+The audit reproduction material is in `tmp/standards-audit/` at the working copy root: `circ-audit.py`, `circ-audit-result.json`, `geometry-audit.py`, `geometry-audit-result.json`, plus extracted text and key original pages of the two user PDFs.

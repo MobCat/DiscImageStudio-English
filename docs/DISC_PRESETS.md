@@ -1,36 +1,36 @@
-# 可编辑盘片预设
+# Editable disc presets
 
-盘片预设分为两层：
+Disc presets come in two layers:
 
-- 内置层随应用发布和更新，保存官方预设。
-- 用户层位于以下文件，只保存用户新增、覆盖和禁用设置：
+- The built-in layer ships and updates with the app and holds the official presets.
+- The user layer lives in the file below and stores only the user's additions, overrides and disabled settings:
 
 ```text
 %LOCALAPPDATA%\DiscImageStudio\disc-presets.json
 ```
 
-程序第一次启动时会在用户层放入“自定义 CD 参数”“自定义 DVD 参数”和“自定义蓝光参数”三个可编辑预设。内置预设不会复制到用户文件，因此应用更新后的参数修正和新增预设会自动生效。
+On first start the program places three editable presets in the user layer: "Custom CD Parameters", "Custom DVD Parameters" and "Custom Blu-ray Parameters". Built-in presets are never copied into the user file, so parameter corrections and new presets take effect automatically after an app update.
 
-新增用户预设的入口在工程设置对话框：「将此套参数保存为预设」先在独立窗口确认名称，再把当前参数追加进用户层；新建工程的模板列表会列出目录中的全部非手动预设，按「最近」「CD」「DVD」「蓝光」分类显示。
+The entry point for adding a user preset is the Project Settings dialog: "Save These Parameters as a Preset" first confirms the name in a separate window and then appends the current parameters to the user layer; the New Project template list shows every non-manual preset in the catalog, grouped under "Recently Used", "CD", "DVD" and "Blu-ray".
 
-工程设置对话框同时列出当前盘型的预设：选择其他预设会覆盖对话框里的几何参数，因此切换前先弹出确认，取消则保留原参数且不改变选中项。新建工程与工程设置中的“自定”预设都可右键删除，删除会立即写回用户层并刷新列表；直接编辑 JSON（新增、改名、禁用）后仍需重启程序生效。
+The Project Settings dialog also lists the presets of the current disc family: choosing another preset overwrites the geometry parameters in the dialog, so a confirmation appears before switching, and cancelling keeps the original parameters and the current selection unchanged. Custom presets in both New Project and Project Settings can be deleted from a context menu, which writes back to the user layer immediately and refreshes the list; editing the JSON directly (adding, renaming, disabling) still requires restarting the program.
 
-## 合并规则
+## Merge rules
 
-- 用户预设使用新 `id` 时，会追加到内置预设之后。
-- 用户预设使用与内置预设相同的 `id` 时，会完整覆盖该内置预设。
-- `disabledCdPresetIds`、`disabledDvdPresetIds` 和 `disabledBluRayPresetIds` 可以隐藏不需要的内置或用户预设。
-- 内置预设更新时，未被同 ID 用户项覆盖的参数会自动更新。
+- A user preset with a new `id` is appended after the built-in presets.
+- A user preset with the same `id` as a built-in preset fully overrides that built-in preset.
+- `disabledCdPresetIds`, `disabledDvdPresetIds` and `disabledBluRayPresetIds` can hide built-in or user presets you do not need.
+- When a built-in preset is updated, parameters not overridden by a user entry with the same ID update automatically.
 
-## 添加 DVD 预设
+## Adding a DVD preset
 
-在 `dvdPresets` 数组中复制初始化的用户对象，修改 `id`、名称和参数。例如：
+Copy an existing object in the `dvdPresets` array and change the `id`, name and parameters. For example:
 
 ```json
 {
   "id": "verbatim-dvd-r-azo-43533",
-  "displayName": "Verbatim DVD-R AZO (43533)（实测）",
-  "description": "Verbatim DVD-R AZO 43533 已验证标定参数：23.9914606277–57.9648936579 mm，共 2,297,888 个扇区；采用三次轨距分布。",
+  "displayName": "Verbatim DVD-R AZO (43533) (measured)",
+  "description": "Verified calibration parameters for Verbatim DVD-R AZO 43533: 23.9914606277-57.9648936579 mm, with 2,297,888 sectors and cubic track-pitch distribution.",
   "totalSectors": 2297888,
   "innerRadiusMm": 23.991460627731737,
   "outerRadiusMm": 57.964893657925366,
@@ -41,21 +41,21 @@
 }
 ```
 
-DVD 的 `totalSectors` 必须大于 0 且是 16 的倍数，以满足 ECC Block 和流式刻录布局要求。`channelBitLengthNm` 见下节，属于保留字段。
+A DVD `totalSectors` must be greater than 0 and a multiple of 16 to satisfy ECC block and streaming-burn layout requirements. `channelBitLengthNm` is covered in the next section and is a reserved field.
 
-此 Verbatim DVD 预设来自用户确认已验证的 `calibration-f2f851f7.calibration.json`，保留记录中的完整参数精度。
+This Verbatim DVD preset comes from the user-confirmed, verified `calibration-f2f851f7.calibration.json` and keeps the full parameter precision from that record.
 
-`pitchLinear`、`pitchQuadratic`、`pitchCubic` 是三次轨距的三个相对形状系数，缺省为 0，兼容旧预设。模型为 `p(x)=p0*(1+pitchLinear*x+pitchQuadratic*x²+pitchCubic*x³)`，`x=(r-innerRadiusMm)/(outerRadiusMm-innerRadiusMm)`。完整多项式有四项；`p0` 根据总轨长自动计算，界面显示四项的实际 μm 数值。整个 `0≤x≤1` 区间内轨距必须严格为正，不能仅检查内外边界。修改任一系数会切换到未保存的自定义状态，重新选择内置等轨距预设会恢复零系数。
+`pitchLinear`, `pitchQuadratic` and `pitchCubic` are the three relative shape coefficients of the cubic track pitch, defaulting to 0 for compatibility with older presets. The model is `p(x)=p0*(1+pitchLinear*x+pitchQuadratic*x²+pitchCubic*x³)` with `x=(r-innerRadiusMm)/(outerRadiusMm-innerRadiusMm)`. The full polynomial has four terms; `p0` is computed automatically from the total track length, and the interface shows the actual µm value of all four terms. Track pitch must be strictly positive over the whole `0≤x≤1` interval — checking only the inner and outer boundaries is not enough. Changing any coefficient switches to the unsaved custom state, and reselecting a constant-track-pitch preset such as a built-in one restores zero coefficients.
 
-## 添加 CD 预设
+## Adding a CD preset
 
-在 `cdPresets` 数组中复制一个现有对象，修改 `id`、名称、扇区数和内外半径。例如：
+Copy an existing object in the `cdPresets` array and change the `id`, name, sector count and inner/outer radii. For example:
 
 ```json
 {
   "id": "cd-74",
-  "displayName": "标准 74min CD",
-  "description": "ECMA-130／ISO/IEC 10149 标准速度 1200 mm/s；120 mm 盘、约 74 分钟，333,000 扇区（24.5–56.8 mm）。",
+  "displayName": "Standard 74-minute CD",
+  "description": "ECMA-130/ISO/IEC 10149 standard speed of 1200 mm/s; 120 mm disc, approximately 74 minutes, with 333,000 sectors (24.5-56.8 mm).",
   "sectors": 333000,
   "innerRadiusMm": 24.5,
   "outerRadiusMm": 56.8,
@@ -63,15 +63,15 @@ DVD 的 `totalSectors` 必须大于 0 且是 16 的倍数，以满足 ECC Block 
 }
 ```
 
-## 添加蓝光预设
+## Adding a Blu-ray preset
 
-在 `bluRayPresets` 数组中复制一个现有对象，修改 `id`、名称和参数。例如：
+Copy an existing object in the `bluRayPresets` array and change the `id`, name and parameters. For example:
 
 ```json
 {
   "id": "bd-r-ritek-10x",
-  "displayName": "铼德 BD-R 10x（实测）",
-  "description": "实测参数：内半径 23.988221 mm、外半径 58.023235 mm、12,219,392 扇区。",
+  "displayName": "Ritek BD-R 10x (measured)",
+  "description": "Measured parameters: inner radius 23.988221 mm, outer radius 58.023235 mm, and 12,219,392 sectors.",
   "totalSectors": 12219392,
   "innerRadiusMm": 23.98822105616562,
   "outerRadiusMm": 58.023234731100764,
@@ -79,25 +79,25 @@ DVD 的 `totalSectors` 必须大于 0 且是 16 的倍数，以满足 ECC Block 
 }
 ```
 
-BD 的 `totalSectors` 必须大于 0、按 32 对齐且不超过单层容量 12,219,392；外半径不超过 60 mm。`invertMapping` 是预置的 3T/6T 极性，应用到工程后仍可在设计页影调模块中修改。
+A BD `totalSectors` must be greater than 0, aligned to 32 and no greater than the single-layer capacity of 12,219,392; the outer radius must not exceed 60 mm. `invertMapping` is the preset 3T/6T polarity and can still be changed in the Design page's tone module after it is applied to a project.
 
-内置 `bd-r-verbatim-64099`（Verbatim BD-R (64099)）采用用户文件 `disc-presets.json` 中已保存的「Verbatim 64099」预设，保留完整精度：内半径 `23.987042157339335` mm、外半径 `57.987960341783236` mm、`12,219,392` 扇区、`invertMapping: false`。GUI 与命令行使用相同参数。
+The built-in `bd-r-verbatim-64099` (Verbatim BD-R (64099)) uses the saved "Verbatim 64099" preset from the user file `disc-presets.json`, keeping full precision: inner radius `23.987042157339335` mm, outer radius `57.987960341783236` mm, `12,219,392` sectors, `invertMapping: false`. The GUI and the command line use the same parameters.
 
-## 固定参数与保留字段
+## Fixed parameters and reserved fields
 
-扫描速度、起始角、图片外半径与 DVD channel bit 长度是方案固定的物理量，界面不提供对应表单，程序生成时一律采用 1200 mm/s（ECMA-130）、0°、57.5 mm 与 133.3 nm。
+The scan velocity, start angle, image outer radius and DVD channel bit length are physical quantities fixed by the scheme; the interface offers no form for them, and generation always uses 1200 mm/s (ECMA-130), 0°, 57.5 mm and 133.3 nm.
 
-它们在 JSON 中仍作为字段保留，原因是在旧版的配置文件中这几个参数是必要的，因此需要保证旧版本写出的用户文件可以直接使用。这两个值不参与生成计算。
+They remain in the JSON as fields because these parameters were mandatory in older configuration files, so user files written by older versions must keep working. These values do not take part in the generation calculation.
 
-## i18n 兼容字段
+## i18n compatibility fields
 
-格式已经预留可选的 `fallbackLanguage`、`displayNameResourceKey` 和 `descriptionResourceKey`。当前版本仍直接显示 `displayName` 与 `description`；以后接入多语言资源时会优先解析资源键，并以现有文本作为回退，因此不需要再次升级 JSON 结构。用户预设无需填写资源键。
+The format already reserves the optional `fallbackLanguage`, `displayNameResourceKey` and `descriptionResourceKey`. The current version still displays `displayName` and `description` directly; when multilingual resources are wired up later, resource keys will be resolved first with the existing text as the fallback, so the JSON structure will not need upgrading again. User presets do not need resource keys.
 
-## 编辑规则
+## Editing rules
 
-- 当前顶层为 `"schemaVersion": 4`，包含 `cdPresets`、`dvdPresets`、`bluRayPresets`、三个禁用列表与可选 `fallbackLanguage`。程序也接受 `"schemaVersion": 2` 与 `3`；缺少 BD 目录时由内置 BD 模板补齐，保存时升级为 4。
-- 每组预设中的 `id` 必须唯一；`__manual__` 是界面“未保存的自定义参数”状态的保留 ID，不能写进 JSON。
-- 只能填写模板中列出的生成参数；其他字段会被拒绝，避免把图片布局或校准参数混入盘片预设。
-- 半径、`linearVelocityMmPerSecond` 和 `channelBitLengthNm` 必须是大于 0 的有限数值，生成外半径必须大于生成内半径。
-- 文件允许 `//` 或 `/* ... */` 注释以及数组末尾的逗号。
-- 如果格式或参数无效，程序会指出问题并继续保留上一次成功加载的预设，不会自动覆盖用户文件。
+- The current top level is `"schemaVersion": 4`, containing `cdPresets`, `dvdPresets`, `bluRayPresets`, the three disable lists and an optional `fallbackLanguage`. The program also accepts `"schemaVersion": 2` and `3`; a missing BD catalog is filled in from the built-in BD templates and the file is upgraded to 4 when saved.
+- `id` must be unique within each preset group; `__manual__` is the reserved ID for the interface's "unsaved custom parameters" state and cannot be written into the JSON.
+- Only the generation parameters listed in the template may be filled in; other fields are rejected so that image layout or calibration parameters cannot leak into disc presets.
+- The radii, `linearVelocityMmPerSecond` and `channelBitLengthNm` must be finite values greater than 0, and the generated outer radius must be greater than the generated inner radius.
+- The file accepts `//` and `/* ... */` comments and trailing commas in arrays.
+- If the format or a parameter is invalid, the program points out the problem and keeps the last successfully loaded presets, and never overwrites the user file automatically.

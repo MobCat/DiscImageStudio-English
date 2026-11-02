@@ -1,70 +1,70 @@
-# DVD NRZI 图像约束求解器
+# DVD NRZI image constraint solver
 
-本项目把连续 16 个 DVD 数据扇区作为一个 ECC Block，根据二维图片或指定的 NRZI pit/land 约束搜索可读的用户数据。
+This project treats 16 consecutive DVD data sectors as one ECC block and searches for readable user data that satisfies a two-dimensional image or an explicit NRZI pit/land constraint.
 
-固定约定：
+Fixed conventions:
 
-- 单层盘片 Data Zone，Sector Information 为 `0x00`；
-- DVD-R Data Frame 的 RSV 为六个 `0x00`；
-- 只输入 ECC Block 的初始 LBA，后续扇区自动使用 `LBA + 1 ... LBA + 15`；
-- `PSN = PSN offset + LBA`，默认 offset 为 `0x30000`；
-- DSV 绝对值相等时选择 Stream 1；
-- `pit = 0 = 黑色`，`land = 1 = 白色`；
-- 每次输出 32768 字节，即 16 个连续的 2048-byte payload。
+- Single-layer disc Data Zone with Sector Information `0x00`;
+- A DVD-R Data Frame's RSV is six `0x00` bytes;
+- Only the ECC block's starting LBA is supplied; subsequent sectors use `LBA + 1 ... LBA + 15` automatically;
+- `PSN = PSN offset + LBA`, with a default offset of `0x30000`;
+- On equal absolute DSV, Stream 1 wins;
+- `pit = 0 = black`, `land = 1 = white`;
+- Each run outputs 32768 bytes, i.e. 16 consecutive 2048-byte payloads.
 
-编码链包括 ID、IED、全零 RSV、EDC、数据扰码、RS-PC PO/PI、PO 行交织、EFMPlus 主表/替代表、SYNC/DSV 控制和 NRZI 转换。
+The encoding chain covers ID, IED, all-zero RSV, EDC, data scrambling, RS-PC PO/PI, PO row interleaving, the EFMPlus main and substitute tables, SYNC/DSV control and NRZI conversion.
 
-独立[灰阶实验工具](../tools/DvdGrayProbe/README.md)使用 `FastDispersionImageWriter.WriteScrambledCodewordPatternStream`，在同一 payload 码字中心坐标系下直接指定扰码 Q，再写出 `P = Q XOR mask`。该接口不经过固定灰度分档，适合测试 `64/E4` 等候选码字和离散抖动图集；普通图片生成的调色板不受影响。快速生成不回放全盘 ECC/EFM，也不预测光学亮度。回归测试对混合码字执行完整 ECC/EFM 小样本回放，另验证实际 payload、几何、并行一致性和取消。
+The separate [grayscale probe tool](../tools/DvdGrayProbe/README.md) uses `FastDispersionImageWriter.WriteScrambledCodewordPatternStream` to specify the scrambled Q directly in the same payload-codeword-centre coordinate system and then write `P = Q XOR mask`. That interface bypasses the fixed grayscale bands and is suitable for testing candidate codewords such as `64/E4` and discrete dither sets; the palette of ordinary image generation is unaffected. Fast generation does not replay the whole disc's ECC/EFM and does not predict optical brightness. Regression tests perform a complete ECC/EFM replay on a small mixed-codeword sample and separately verify the actual payload, geometry, parallel consistency and cancellation.
 
-## 构建和自检
+## Build and self-test
 
-构建需要 Windows 和 .NET 10 SDK；直接运行非自包含产物需要 .NET 10 Windows 桌面运行时：
+Building needs Windows and the .NET 10 SDK; running a non-self-contained build directly needs the .NET 10 Windows Desktop Runtime:
 
 ```powershell
 dotnet build DvdImageSolver.slnx --configuration Release
 dotnet run --project src/DvdImageSolver --configuration Release -- selftest
 ```
 
-自检覆盖：
+The self-test covers:
 
-- ECMA-267 调制表抽样；
-- ID、IED、RSV 和 EDC；
-- 扰码异或往返；
-- 208 行 PI 与 172 列 PO 的零余数；
-- 619008 个物理 NRZI 电平的数量、确定性和 RLL(2,10) 数据游程；
-- 16-bit码字在pit/land两种初始电平下的预计算灰度、结束电平和DSV增量；
-- 随机SYNC Frame的码字复放灰度、SYNC选择、最终State/DSV/电平与逐bit编码器一致；
-- 双流EFMPlus前缀状态与逐bit编码器在无需备用SYNC重放时完全一致；
-- state-control最终边界与完整DVD前向编码一致，求解过程不物化619008-bit电平数组；
-- dispersion模式的`0x92/0xA5`扰码域映射、反扰码ISO payload和最终边界与完整编码一致；
-- 最小 ISO9660 描述符、Path Table、根目录、payload LBA 和模板替换结果。
-- 半径标定 PNG 预览和连续多 ECC Block 原始镜像输出。
-- 内圈 ISO9660/Joliet 文件、Unicode 子目录和外圈绘图数据的隔离保护。
+- sampling of the ECMA-267 modulation table;
+- ID, IED, RSV and EDC;
+- scrambling XOR round-trip;
+- zero remainders for the 208 PI rows and 172 PO columns;
+- count, determinism and RLL(2,10) data run lengths of the 619008 physical NRZI levels;
+- precomputed gray level, end level and DSV increment of 16-bit codewords under both pit and land initial levels;
+- codeword replay gray level, SYNC selection, final state/DSV/level of random SYNC frames agreeing with the bit-by-bit encoder;
+- the dual-stream EFMPlus prefix state agreeing exactly with the bit-by-bit encoder whenever no substitute SYNC replay is needed;
+- the state-control final boundary agreeing with the full DVD forward encoding without materialising the 619008-bit level array during the solve;
+- the dispersion mode's `0x92/0xA5` scrambled-domain mapping, the de-scrambled ISO payload and the final boundary agreeing with the full encoding;
+- the minimal ISO9660 descriptors, path table, root directory, payload LBA and template substitution results.
+- the radius-calibration PNG preview and contiguous multi-ECC-block raw image output.
+- isolation protection for inner-ring ISO9660/Joliet files, Unicode subdirectories and outer-ring artwork data.
 
-## 目标文件
+## Target file
 
-目标文件使用字符表示物理 NRZI 电平：
+A target file uses characters to represent physical NRZI levels:
 
 ```text
-0 或 P    pit，黑色
-1 或 L    land，白色
-?         不约束
+0 or P    pit, black
+1 or L    land, white
+?         unconstrained
 ```
 
-空白和下划线会被忽略。文件必须包含以下二者之一：
+Spaces and underscores are ignored. The file must contain one of the following:
 
-- 38688 个符号：约束一个物理扇区，通过 `--target-sector 0..15` 指定它在 ECC Block 中的位置；
-- 619008 个符号：约束完整 ECC Block。
+- 38688 symbols: constrain one physical sector, whose position in the ECC block is given by `--target-sector 0..15`;
+- 619008 symbols: constrain the complete ECC block.
 
-SYNC、RLL、EDC 和 ECC 会限制可实现的图案，因此任意逐 bit 图像通常不存在零误差解。`full`模式以不匹配的NRZI bits为目标；图片的`state-control`模式把目标二值化为黑或白，先计算pit/land多数方向是否错误，再计算实际land数量到纯黑0或纯白16的灰度距离。搜索目标只使用可控payload码字，最终可见度则统计全部channel码字。
+SYNC, RLL, EDC and ECC constrain which patterns are achievable, so an arbitrary bit-by-bit image usually has no zero-error solution. `full` mode aims at the mismatching NRZI bits; an image's `state-control` mode thresholds the target to black or white, first computing whether the pit/land majority direction is wrong and then computing the gray-level distance from the actual land count to pure black 0 or pure white 16. The search objective only uses the controllable payload codewords, while final visibility counts all channel codewords.
 
-`dispersion`模式不控制绝对pit/land多数，而用EFMPlus跳变密度形成黑白二阶纹理。采用扰码后字节`Q=0xA5/0x92`，所有状态表示分别固定为5/2次transition。图片亮度0–127映射A5、128–255映射92，预览亮度为0/255。新生成的图片不再使用66或B9作为独立灰阶。NRZI整体反色不改变transition位置。
+`dispersion` mode does not control the absolute pit/land majority but uses EFMPlus transition density to form a two-level black and white texture. After scrambling, the bytes are `Q=0xA5/0x92` and every state representation is fixed at 5/2 transitions respectively. Image brightness 0–127 maps to A5 and 128–255 maps to 92, with preview brightness 0/255. Newly generated images no longer use 66 or B9 as a distinct gray level. Inverting the whole NRZI pattern does not move the transition positions.
 
-已抖动的全不透明灰度图片若只含`0/255`（允许全黑或全白），生成与标定预览使用最近像素采样，保留像素的原始档位；普通连续灰度、彩色或带透明度的图片仍采用双线性采样。主程序的CD/DVD环形复制对黑白离散输入先进行高质量缩放和旋转，再重新二阶抖动，避免缩放后的连续灰度直接分档而损失混合层次。`full`和`state-control`的二值目标保持原来的采样规则。
+For an already dithered fully opaque grayscale image containing only `0/255` (all black or all white allowed), generation and the calibration preview use nearest-pixel sampling and keep each pixel's original level; ordinary continuous grayscale, colour or translucent images still use bilinear sampling. The main app's CD/DVD annular compositing first performs high-quality scaling and rotation on discrete black and white input and then re-dithers to two levels, so continuous grayscale produced by scaling is not banded directly and loses its mixed gradation. The binary objectives of `full` and `state-control` keep their original sampling rules.
 
-## 图片映射
+## Image mapping
 
-可以直接输入 PNG、JPEG、BMP、TIFF 或 GIF：
+PNG, JPEG, BMP, TIFF or GIF can be supplied directly:
 
 ```powershell
 dotnet run --project src/DvdImageSolver --configuration Release -- solve `
@@ -86,11 +86,11 @@ dotnet run --project src/DvdImageSolver --configuration Release -- solve `
   --channel-output channel.bin
 ```
 
-其中 `--total-sectors` 是盘片报告的 2048-byte 数据块总数；也可以写成别名 `--total-blocks`。它和每扇区 38688 channel bits、`--channel-bit-nm` 一起确定总轨道长度。程序再根据内外半径和轨距曲线反解轨距尺度。
+Here `--total-sectors` is the total number of 2048-byte data blocks the disc reports; the alias `--total-blocks` is also accepted. Together with 38688 channel bits per sector and `--channel-bit-nm` it determines the total track length. The program then solves back for the track-pitch scale from the inner and outer radii and the track-pitch curve.
 
-### 随半径变化的三次轨距
+### Cubic track pitch varying with radius
 
-DVD 生成、流式输出、图片预览、ISO 回读和辅助标定共用 `DvdTrackGeometry`。设归一化半径 `x=(r-ri)/(ro-ri)`，局部轨距为：
+DVD generation, streaming output, image preview, ISO readback and the calibration assistant all share `DvdTrackGeometry`. With normalised radius `x=(r-ri)/(ro-ri)`, the local track pitch is:
 
 ```text
 p(x) = a0 + a1*x + a2*x² + a3*x³                 [mm]
@@ -98,24 +98,24 @@ p(x) = a0 + a1*x + a2*x² + a3*x³                 [mm]
 dr/dθ = p(x)/(2π)
 ```
 
-完整三次多项式有四个系数。输入的 `--pitch-linear`、`--pitch-quadratic`、`--pitch-cubic` 是三个无量纲相对系数 `c1,c2,c3`；常数项 `a0=p0` 根据固定的总轨道长度自动求解，另外三项为 `ai=p0*ci`。因此四项满足容量和内外半径的长度约束，而不是四项全部独立。界面以 μm 展示完整四项，系数的变量是 `x`，不是以 mm 为单位的绝对半径。
+The full cubic polynomial has four coefficients. The inputs `--pitch-linear`, `--pitch-quadratic` and `--pitch-cubic` are three dimensionless relative coefficients `c1,c2,c3`; the constant term `a0=p0` is solved automatically from the fixed total track length, and the other three terms are `ai=p0*ci`. The four terms therefore satisfy the length constraint from the capacity and the inner and outer radii rather than all being independent. The interface shows all four terms in μm, and the coefficients' variable is `x`, not an absolute radius in mm.
 
-轨长使用 `L=∫sqrt(1+(2πr/p(r))²)dr`，角度使用 `θ(r)=∫2π/p(r)dr`；变化轨距不能再用恒定螺距的 `(r-ri)/b` 计算角度。程序验证整个生成环带内轨距严格为正，包括多项式内部极值。三项均为零时使用原恒定轨距模型，旧参数和预设省略这些字段时默认零。
+Track length uses `L=∫sqrt(1+(2πr/p(r))²)dr` and angle uses `θ(r)=∫2π/p(r)dr`; a varying track pitch can no longer compute the angle with the constant-pitch `(r-ri)/b`. The program verifies that track pitch is strictly positive across the whole generated band, including interior extrema of the polynomial. When all three coefficients are zero the original constant-track-pitch model is used, and old parameters and presets default to zero when these fields are omitted.
 
-例如在原 `solve` 命令后增加 `--pitch-linear 0.02 --pitch-quadratic -0.03 --pitch-cubic 0.015`。这只是参数格式示例，不是任何盘片的实测值。`calibrate` 使用相同选项指定生成曲线，另以 `--actual-pitch-linear`、`--actual-pitch-quadratic`、`--actual-pitch-cubic` 指定实际曲线；也接受 `--generated-pitch-*` 别名。`simulate` 的 `--pitch-*` 指实际盘片曲线。
+For example, append `--pitch-linear 0.02 --pitch-quadratic -0.03 --pitch-cubic 0.015` to the original `solve` command. This is only a format example, not a measured value for any disc. `calibrate` uses the same options to specify the generation curve and additionally specifies the actual curve with `--actual-pitch-linear`, `--actual-pitch-quadratic` and `--actual-pitch-cubic`; the `--generated-pitch-*` aliases are also accepted. `simulate`'s `--pitch-*` refers to the actual disc curve.
 
-镜像和预览的 JSON 记录相对系数及轨距基值，标定会话保存相对系数、内外半径、扇区数及位长，能够重建完整四项。照片整体转角仍是独立拟合量。
+The JSON written next to the image and the preview records the relative coefficients and the track-pitch base value, and a calibration session saves the relative coefficients, the inner and outer radii, the sector count and the bit length, which is enough to rebuild all four terms. The photo's overall rotation remains a separately fitted quantity.
 
-坐标和采样约定：
+Coordinate and sampling conventions:
 
-- 图片中心对应盘片中心，图片短边对应外径，长边多出的区域保留；
-- 轨道在内半径处从 0° 开始，0° 指向图片右侧；默认按数学方向逆时针，可用 `--spiral-direction cw` 改为顺时针；
-- 图片黑色映射为 pit，白色映射为 land；灰度低于 `--image-threshold` 算黑色；
-- alpha 低于 `--alpha-threshold` 的透明区域不施加约束；
-- `--lba` 从轨道起始数据块按零开始计数，程序只映射该 LBA 开始的连续 16 个 sector；
-- `--constraint-output` 可选，用于导出实际生成的 619008-symbol 线性约束以便检查。
+- The image centre corresponds to the disc centre, the image's short side corresponds to the outer diameter, and the extra area on the long side is kept;
+- The track starts at 0° at the inner radius, with 0° pointing to the right of the image; the default is counter-clockwise in the mathematical sense and `--spiral-direction cw` switches to clockwise;
+- Image black maps to pit and white maps to land; gray levels below `--image-threshold` count as black;
+- Transparent areas whose alpha is below `--alpha-threshold` impose no constraint;
+- `--lba` counts from the track's first data block as zero, and the program maps only the 16 consecutive sectors starting at that LBA;
+- `--constraint-output` is optional and exports the generated 619008-symbol linear constraint for inspection.
 
-## 求解
+## Solving
 
 ```powershell
 dotnet run --project src/DvdImageSolver --configuration Release -- solve `
@@ -133,22 +133,22 @@ dotnet run --project src/DvdImageSolver --configuration Release -- solve `
   --channel-output channel.bin
 ```
 
-重要参数：
+Important parameters:
 
-- `--lba`：ECC Block 的初始 LBA，不是 16 个 LBA；
-- `--psn-offset`：十进制或 `0x` 十六进制，默认 `0x30000`；
-- `--initial-state`：EFMPlus 状态 1 到 4；
-- `--initial-dsv`：进入当前 ECC Block 前的累计 DSV；
-- `--initial-level`：进入当前块前的物理状态 `pit` 或 `land`；
-- `--seed-payload`：可选的 32768-byte 初始解；未提供时默认生成确定性的随机初始解；
-- `--initial zero`：改用全零初始 payload；
-- `--channel-output`：额外输出最终 NRZI 电平，每8个电平按 MSB-first 打包。
+- `--lba`: the starting LBA of the ECC block, not a count of 16 LBAs;
+- `--psn-offset`: decimal or `0x` hexadecimal, default `0x30000`;
+- `--initial-state`: EFMPlus state 1 to 4;
+- `--initial-dsv`: the accumulated DSV before entering the current ECC block;
+- `--initial-level`: the physical state `pit` or `land` before entering the current block;
+- `--seed-payload`: an optional 32768-byte initial solution; without it a deterministic random initial solution is generated;
+- `--initial zero`: use an all-zero initial payload instead;
+- `--channel-output`: additionally output the final NRZI levels, packed MSB-first in groups of 8.
 
-`--target` 和 `--image` 二选一。图片模式还必须提供 `--total-sectors` 或 `--total-blocks`。
+`--target` and `--image` are mutually exclusive. Image mode must also supply `--total-sectors` or `--total-blocks`.
 
-### State-control码字灰度求解模式
+### State-control codeword gray-level solving mode
 
-原有不限制payload位置的算法保留为`--algorithm full`，也接受别名`exact`。旧的空间控制字节池算法已经删除；新模式用以下参数启用：
+The original algorithm, which does not restrict payload positions, is kept as `--algorithm full`, with the alias `exact` also accepted. The old spatial control byte-pool algorithm has been removed; the new mode is enabled with these parameters:
 
 ```powershell
 dotnet run --project src/DvdImageSolver --configuration Release -- solve `
@@ -166,56 +166,56 @@ dotnet run --project src/DvdImageSolver --configuration Release -- solve `
   --iterations 3
 ```
 
-state-control把每个91-byte Sync Frame作为一个求解段。EDC、PI、PO、固定字段和SYNC仍然精确生成并参与State、DSV和pit/land边界传播；它们不参与自由字节搜索目标，但会参与最终整盘可见度评分。程序按`EFMPlus state × 输入电平 × 当前累计DSV`计算最优黑/白字节对。目标位置对每条活跃Stream只尝试其当前精确状态对应的黑或白字节；每个前缀只保留评分最好的`--beam-width`条路径。每个包含图像目标的自由段还会把首尾各`--bridge-bytes`个payload字节作为控制位置，但控制位置也只在当前DSV字节对中选择，不再枚举全部256个值。
+state-control treats each 91-byte Sync Frame as one solving segment. EDC, PI, PO, fixed fields and SYNC are still generated exactly and take part in propagating the state, DSV and pit/land boundary; they do not take part in the free-byte search objective but do take part in the final whole-disc visibility score. The program computes the optimal black/white byte pair from `EFMPlus state × input level × current accumulated DSV`. At a target position each active stream only tries the black or white byte matching its current exact state, and each prefix keeps only the best-scoring `--beam-width` paths. Every free segment containing image targets also uses the first and last `--bridge-bytes` payload bytes as control positions, but a control position likewise only chooses among the current DSV byte pairs instead of enumerating all 256 values.
 
-程序启动时预处理全部65536个16-bit码字在初始pit和land时的：
+At start-up the program precomputes, for all 65536 16-bit codewords under both the initial pit and land levels:
 
-- 16个NRZI位置中land的数量，即0到16的17级灰度；
-- 码字结束后的pit/land；
-- 精确DSV增量；
-- 前导和尾随零数，用于RLL边界检查。
+- the number of lands among the 16 NRZI positions, i.e. 17 gray levels from 0 to 16;
+- the pit/land state after the codeword ends;
+- the exact DSV increment;
+- the leading and trailing zero counts, for RLL boundary checks.
 
-字节对对每种可能的EFMPlus表示同时计算灰度误差和写入该码字后的`|DSV|`，联合代价为`最坏灰度误差 × 16 + 最坏输出|DSV|`。因此一个灰度级仍比15个DSV单位更重要，但当前DSV的方向和大小可以在灰度相近的字节之间改变选择。常用的DSV -256..256字节对会预计算；若传入或运行中超出此范围则按精确DSV即时计算，不截断。这里的字节是扰码之后、进入EFMPlus的recording-frame字节；写入ISO的原始payload会经过扰码异或逆映射，因此其数值不一定只有这几种。
+For every possible EFMPlus representation of a byte pair the program computes both the gray-level error and the `|DSV|` after writing that codeword, with the joint cost `worst gray error × 16 + worst output |DSV|`. One gray level is therefore still worth more than 15 DSV units, but the direction and magnitude of the current DSV can change the choice between bytes with similar gray levels. Byte pairs for the commonly used DSV range -256..256 are precomputed; anything outside that range is computed exactly on demand and never truncated. The bytes here are the recording-frame bytes after scrambling and before EFMPlus; the raw payload written into the ISO goes through the scrambling XOR inverse mapping, so its numeric values are not necessarily limited to these.
 
-内层候选以一个EFMPlus码字为单位评分，不展开16个channel levels。每条beam路径同时保存Stream 1和Stream 2，不会提前把其中一条错误丢弃。SYNC主/副码、Stream 1平局选择、累计DSV和最终边界仍按原编码器的整数规则逐码字精确复放；每个Sync Frame的幸存序列还会用完整91字节字级编码器重算，以处理DSV越界时的备用SYNC。最终结果只做码字级多数、灰度与边界复核；只有显式要求`--channel-output`时才展开逐bit数据。
+Inner candidates are scored per EFMPlus codeword and do not expand the 16 channel levels. Each beam path stores Stream 1 and Stream 2 together and never discards one of them early. The SYNC main/sub codes, Stream 1 tie-breaking, accumulated DSV and final boundary are still replayed codeword by codeword with the original encoder's integer rules; the surviving sequence of each Sync Frame is also recomputed with the complete 91-byte word-level encoder so that a substitute SYNC is handled when DSV would overflow. The final result only undergoes a codeword-level majority, gray-level and boundary review; bit-by-bit data is expanded only when `--channel-output` is explicitly requested.
 
-state-control搜索时使用严格字典序目标：先最小化自由payload的`controlled-majority-error`，只有多数判错数相等时才比较`controlled-gray-error`，仍相等时才比较边界和DSV。控制台与JSON中的主`majority-error`/`score`表示最终全部channel码字的可见误差：每个Sync Frame包含2个SYNC码字和91个数据码字，一个ECC Block在不透明图片下的分母固定为`416 × 93 = 38688`。主`gray-error`同样覆盖这38688个码字。自由字节搜索分数另存为`controlledScore`和`controlledGrayScore`；所有误差都是越低越好。
+The state-control search uses a strict lexicographic objective: first minimise the free payload's `controlled-majority-error`, then compare `controlled-gray-error` only when the majority-misjudged count is equal, and compare the boundary and DSV only when those are equal too. The primary `majority-error`/`score` in the console and JSON describes the visibility error over all final channel codewords: each Sync Frame contains 2 SYNC codewords and 91 data codewords, and for one ECC block under an opaque image the denominator is fixed at `416 × 93 = 38688`. The primary `gray-error` likewise covers those 38688 codewords. The free-byte search score is stored separately as `controlledScore` and `controlledGrayScore`; all errors are better when lower.
 
-每个外层pass先用当前完整ECC Block精确计算每个Sync Frame的controlled majority/gray误差，再选择最差的`--retry-frame-fraction`（默认0.25）帧。程序先把这些帧作为一次跨块warm-start候选，以快速离开随机初始解；无论局部EFM评分多好，都必须更新EDC、PO、PI并完成整块精确复放后才能接受。候选ECC更新会复用当前recording frames：只重建payload发生变化的sector、受影响的PO列和PI行，结果由自检逐字确认与全量ECC重建一致。随后候选按`--batch-frames`（默认8）组成小批量，每组并行生成和复核`--batch-candidates`（默认4）个不同EFM序列。只有整块controlled评分严格改善时才接受。批量失败后依次拆成更小的组，直到单帧；单帧失败时可用`--retry-beam-width`（默认32）再试一次。一次拆分只沿第一条成功分支继续，避免穷举整棵拆分树。一个pass没有任何候选被接受就提前停止。`--retry-frame-fraction 0`表示每个pass处理全部有错帧，`--retry-beam-width 0`关闭单帧宽束重试。
+Each outer pass first computes each Sync Frame's controlled majority/gray error exactly from the current full ECC block, then chooses the worst `--retry-frame-fraction` (default 0.25) of frames. It first treats those frames as one cross-block warm-start candidate to escape the random initial solution quickly; no matter how good the local EFM score is, the candidate is accepted only after EDC, PO and PI have been updated and the whole block has been replayed exactly. Candidate ECC updates reuse the current recording frames: only sectors whose payload changed, the affected PO columns and the PI rows are rebuilt, and the self-test confirms byte for byte that this matches a full ECC rebuild. The candidates are then grouped into small batches of `--batch-frames` (default 8), each of which generates and rechecks `--batch-candidates` (default 4) different EFM sequences in parallel. Acceptance requires a strict improvement in the whole-block controlled score. A failed batch is split into successively smaller groups down to a single frame; when a single frame fails, `--retry-beam-width` (default 32) can try once more. A split only continues along the first successful branch, so the whole split tree is not enumerated. A pass stops early when no candidate is accepted. `--retry-frame-fraction 0` processes every erroneous frame in each pass, and `--retry-beam-width 0` disables the single-frame wide-beam retry.
 
-`--beam-width`、`--retry-beam-width`和`--batch-candidates`越大，越容易找到ECC反馈后仍有效的候选，但运行时间近似随候选复核次数增加。`--batch-frames`较大时单次局部改善更强，但更容易因PO/PI反馈而被整块验收拒绝；较小则更稳但需要更多次完整重建。`--iterations`或范围模式的`--iterations-per-block`表示闭环pass数，默认3。兼容别名`--algorithm control`仍可使用；旧的`--frame-candidates`、`--parallel-candidates`、`--parallelism`、`--word-candidates`和`--control-bytes`会被拒绝。`--mutation-bytes`只属于`full`模式。
+Larger `--beam-width`, `--retry-beam-width` and `--batch-candidates` make it likelier to find a candidate that still holds after ECC feedback, but run time grows roughly with the number of candidate rechecks. A larger `--batch-frames` gives a stronger local improvement per attempt but is more likely to be rejected at whole-block acceptance because of PO/PI feedback; smaller is steadier but needs more full rebuilds. `--iterations`, or `--iterations-per-block` in range mode, is the number of closed-loop passes and defaults to 3. The compatibility alias `--algorithm control` still works; the old `--frame-candidates`, `--parallel-candidates`, `--parallelism`, `--word-candidates` and `--control-bytes` are rejected. `--mutation-bytes` belongs to `full` mode only.
 
-`--search-lanes 1..8`用于降低局部极小值造成的接近50%误差。lane 1使用传入的初始payload并保持严格单调验收；其余lane用`--seed`派生的确定性独立payload重新开始，并允许按`--initial-temperature`到`--final-temperature`的退火温度暂时接受整块精确分数较差的候选，以跨过PO/PI造成的局部障碍。每个lane始终另存完整ECC精确复放后的历史最优，所有lane并行运行，最后按controlled majority、gray、最终`|DSV|`依次择优，因此探索步骤不会使最终输出劣于lane 1。默认1不增加成本。质量优先可先在少量sector上试`--search-lanes 4 --iterations-per-block 10`；独立重启会改变未受图像约束的payload，因此需要保留指定payload内容时应保持1。
+`--search-lanes 1..8` reduces the near-50% error caused by local minima. Lane 1 uses the supplied initial payload and keeps strictly monotonic acceptance; the other lanes restart from independent deterministic payloads derived from `--seed` and may temporarily accept candidates with a worse whole-block exact score, following an annealing temperature from `--initial-temperature` to `--final-temperature`, to cross obstacles created by PO/PI. Every lane always keeps its own best history after exact full-ECC replay, all lanes run in parallel, and the winner is chosen by controlled majority, then gray, then final `|DSV|`, so exploration can never make the final output worse than lane 1. The default of 1 adds no cost. For quality first, try `--search-lanes 4 --iterations-per-block 10` on a small number of sectors; an independent restart changes payloads that the image does not constrain, so keep 1 when specific payload content must be preserved.
 
-`full/exact`表示不限制可变payload位置，并不表示穷举`256^32768`空间或保证全局最优。图片先由`--image-threshold`逐像素二值化；state-control再对每个16-bit payload码字内的图像样本做黑白多数投票，目标只会是纯黑0或纯白16，8:8平局用码字中心样本决定。求解时先最小化实际码字多数方向判错数，再以land数量到0/16的距离作为灰度误差。它不匹配16个位置各自的bit图案；若要求逐channel-bit位置完全对应，应使用`full`。
+`full/exact` means the variable payload positions are unrestricted; it does not mean enumerating the `256^32768` space or guaranteeing a global optimum. An image is first thresholded pixel by pixel with `--image-threshold`; state-control then takes a black/white majority vote over the image samples inside each 16-bit payload codeword, so the target is only pure black 0 or pure white 16, with an 8:8 tie decided by the sample at the codeword centre. The solve first minimises the number of codewords whose actual majority direction is wrong, then uses the distance from the land count to 0/16 as the gray-level error. It does not match the individual bit pattern at each of the 16 positions; if an exact per-channel-bit match is required, use `full`.
 
-### Dispersion单字节纹理模式
+### Dispersion single-byte texture mode
 
-`--algorithm dispersion`（别名`byte-pool`）直接在扰码域生成payload，不执行随机搜索：
+`--algorithm dispersion` (alias `byte-pool`) generates the payload directly in the scrambled domain without running a random search:
 
 ```text
-图片亮度   0..127 -> Q = 0xA5 -> 固定5次transition -> 预览0
-图片亮度 128..255 -> Q = 0x92 -> 固定2次transition -> 预览255
+image brightness   0..127 -> Q = 0xA5 -> fixed 5 transitions -> preview 0
+image brightness 128..255 -> Q = 0x92 -> fixed 2 transitions -> preview 255
 ISO payload P = Q XOR sector scrambler byte
 ```
 
-每个payload码字都按其16个channel bits的盘面中心采样图片，再按上述固定区间分档，因此该模式不受`--constraint-step`或`--image-threshold`影响；`--image-threshold`仅控制`full/state-control`的二值目标。ID、IED、全零RSV、EDC、PI、PO和SYNC仍按标准生成；程序不展开619008个NRZI bits，但会用完整recording frames逐码字重放，精确传递最终EFMPlus state、DSV和pit/land到下一ECC Block。
+Each payload codeword samples the image at the disc-surface centre of its 16 channel bits and is then banded by the fixed intervals above, so this mode is unaffected by `--constraint-step` or `--image-threshold`; `--image-threshold` only controls the `full/state-control` binary target. ID, IED, all-zero RSV, EDC, PI, PO and SYNC are still generated to the standard; the program does not expand the 619008 NRZI bits but replays codeword by codeword through the complete recording frames, passing the final EFMPlus state, DSV and pit/land exactly into the next ECC block.
 
-#### 影调抖动
+#### Tone dithering
 
-两个纹理本身只有黑白，但图片的中间调可以在每个payload字节上按比例混合它们：
+The two textures are black and white by themselves, but the image's midtones can mix them proportionally on each payload byte:
 
 ```powershell
 --tone-dither 1 --tone-levels 2 --tone-brightness 0
 ```
 
-- `--tone-dither 0..1`：0 保持原来的 `--image-threshold` 硬阈值；1 按字节抖动阈值，使灰度按黑白码字的空间比例还原。
-- `--tone-levels`：DVD 只有两种纹理，只接受 2。
-- `--tone-brightness -64..64`：整体平移灰度。
+- `--tone-dither 0..1`: 0 keeps the original `--image-threshold` hard threshold; 1 dithers the threshold byte by byte so gray levels are reproduced through the spatial ratio of black and white codewords.
+- `--tone-levels`: DVD has only two textures, so only 2 is accepted.
+- `--tone-brightness -64..64`: shifts the gray levels as a whole.
 
-抖动相位由逻辑payload字节索引决定，与预览采样无关；`simulate` 读取 ISO 时只按 `0xA5/0x92` 分类，因此读回模拟自然反映抖动结果。缺省不传这些参数时输出与旧版逐字节一致。
+The dither phase is determined by the logical payload byte index and is independent of preview sampling; `simulate` classifies only by `0xA5/0x92` when reading the ISO, so the readback simulation naturally reflects the dithering. With these parameters omitted the output is byte-for-byte identical to older versions.
 
-只需要尽快生成可刻录镜像、不需要输出最终EFMPlus边界时，可加`--fast-output true`。快速输出仍在相同的payload码字中心采样图片，并产生与普通dispersion模式相同的2048-byte sector；区别是它用预计算的32 KiB扰码掩码直接从`Q`反推ISO字节`P`，不构造Data Frame、EDC、PI、PO和Recording Frame，也不回放EFMPlus、DSV或pit/land状态。JSON中的`exactEccEfmReplay`会是`false`且`finalBoundary`为`null`。这不会省略刻录所需的数据：刻录机仍会从2048-byte sector自行生成这些派生字段。
+When all you need is a burnable image as fast as possible and the final EFMPlus boundary is not required, add `--fast-output true`. Fast output still samples the image at the same payload codeword centres and produces the same 2048-byte sectors as ordinary dispersion mode; the difference is that it derives the ISO bytes `P` from `Q` directly with a precomputed 32 KiB scrambler mask, without building Data Frames, EDC, PI, PO or Recording Frames and without replaying EFMPlus, DSV or pit/land state. `exactEccEfmReplay` in the JSON will then be `false` and `finalBoundary` will be `null`. This does not omit any data needed for burning: the recorder still generates those derived fields itself from the 2048-byte sectors.
 
 ```powershell
 & ".\src\DvdImageSolver\bin\Release\net10.0-windows\DvdImageSolver.exe" solve `
@@ -234,25 +234,25 @@ ISO payload P = Q XOR sector scrambler byte
   --initial zero
 ```
 
-`--fast-parallelism 0`会按逻辑处理器数量并行生成互不依赖的ECC Block payload，再按LBA顺序写入镜像；也可以设为`1..64`限制CPU占用。并行不会改变字节选择或输出顺序。
+`--fast-parallelism 0` generates independent ECC block payloads in parallel across logical processors and then writes them into the image in LBA order; it can also be set to `1..64` to limit CPU use. Parallelism changes neither byte selection nor output order.
 
-快速文件输出与流式输出在支持硬件加速时默认启用四点双精度 SIMD 采样。每组仍使用四个实际 payload 码字中心，不把跨 SYNC/ECC 的位置当作连续等距样本。三次轨距的同段求逆共用一次查段，并向量化原有四次 Newton/Hermite 计算；跨段和边界回退到标量几何。全不透明黑白图使用向量正余弦，接近半像素或图片边缘的点按原标量路径重算；普通灰阶、彩色和透明图保留原有标量正余弦与插值，只加速三次轨距几何。恒定轨距、解析图案回调和无 SIMD 硬件的机器继续使用标量采样。恒定轨距的四点路径在当前实测中存在性能回退，因此暂不启用。全程保留 `double`，不使用单精度坐标或近似螺旋公式。
+When hardware acceleration is available, fast file output and streaming output enable four-point double-precision SIMD sampling by default. Each group still uses four actual payload codeword centres and never treats a position across SYNC/ECC as a consecutive evenly spaced sample. Cubic track pitch shares one segment lookup between the inversions of the same segment and vectorises the original four Newton/Hermite evaluations; crossing segments and boundaries falls back to scalar geometry. Fully opaque black and white images use vector sine and cosine, while points near a half-pixel boundary or the image edge are recomputed on the original scalar path; ordinary grayscale, colour and translucent images keep the original scalar trigonometry and interpolation and only the cubic track-pitch geometry is accelerated. Constant track pitch, analytic pattern callbacks and machines without SIMD hardware keep scalar sampling. The four-point path for constant track pitch shows a performance regression in current measurements, so it is not enabled yet. `double` is used throughout; no single-precision coordinates or approximate spiral formulas are used.
 
-调用生成 API 时可设置 `MultiBlockSolveOptions.UseSimdSampling = false` 使用标量参考路径，便于性能与输出比较；默认值为 `true`，无需改动现有 GUI 或命令行参数。回归覆盖两种采样路径的 payload/计数一致性、三次轨距分段边界、半像素边界、透明度阈值、顺逆时针和并行输出顺序。吞吐应按相同输入与 LBA 范围的实际 payload 字节计时；单独三角函数的加速比不代表整盘加速比。
+When calling the generation API, set `MultiBlockSolveOptions.UseSimdSampling = false` to use the scalar reference path, which makes performance and output comparison easy; the default is `true` and no existing GUI or command-line parameter needs changing. Regressions cover payload/count consistency between the two sampling paths, cubic track-pitch segment boundaries, half-pixel boundaries, the alpha threshold, both spiral directions and parallel output order. Throughput should be timed on the actual payload bytes for the same input and LBA range; the speed-up of the trigonometry alone does not represent the speed-up of the whole disc.
 
-恒定轨距的快速求逆缓存求解完成后不变的内半径积分值、半径平方与轨距系数，并在一次 Newton 修正中复用相同的平方根。该路径保留原有 `double` 运算顺序、除法和边界行为，不使用近似积分或乘倒数替代除法。独立旧公式回归逐位比较半径、角度及短螺旋边界；性能比较须使用优化前后的独立引擎，因为 `UseSimdSampling` 开关两侧都会使用这项标量优化。
+For constant track pitch the fast inverse cache stores the radial integral, radius squared and track-pitch coefficients that stay fixed once solving completes, and reuses the same square root in one Newton correction. That path keeps the original `double` operation order, division and boundary behaviour and uses neither approximate integrals nor multiplication by a reciprocal instead of division. An independent legacy-formula regression compares radius, angle and short-spiral boundaries bit for bit; performance comparisons must use independent engines from before and after the optimisation, because both sides of the `UseSimdSampling` switch use this scalar optimisation.
 
-`payload-transition-class-error=0`表示所有受控payload都正确分配到了二阶`0xA5/0x92`类别，不表示固定字段、ECC和SYNC也具有相同transition密度。输出JSON的`dispersionPool.levels`记录两档输入区间、Q字节、跳变数和名义预览亮度；这些预览值不等同于实盘反射率。
+`payload-transition-class-error=0` means every controlled payload byte was correctly assigned to the two-level `0xA5/0x92` class; it does not mean the fixed fields, ECC and SYNC have the same transition density. `dispersionPool.levels` in the output JSON records the two input ranges, the Q bytes, the transition counts and the nominal preview brightness; those preview values are not the same as real-disc reflectivity.
 
-输出包括：
+The output consists of:
 
-- `payload.bin`：16 个2048-byte扇区顺序拼接；
-- `payload.bin.json`：PSN、初始/结束边界状态、误差、迭代次数和运行时间；
-- 可选的 `channel.bin`：77376-byte 打包 NRZI 电平。
+- `payload.bin`: 16 2048-byte sectors concatenated in order;
+- `payload.bin.json`: PSN, initial/final boundary state, errors, iteration counts and elapsed time;
+- an optional `channel.bin`: the 77376-byte packed NRZI levels.
 
-## 输出可刻录 ISO
+## Outputting a burnable ISO
 
-`solve` 可以只输出 ISO，也可以同时保留 32768-byte payload：
+`solve` can output only the ISO, or additionally keep the 32768-byte payload:
 
 ```powershell
 dotnet run --project src/DvdImageSolver --configuration Release -- solve `
@@ -263,15 +263,15 @@ dotnet run --project src/DvdImageSolver --configuration Release -- solve `
   --iterations 10000
 ```
 
-图片模式会直接复用 `--total-sectors` 作为 ISO 的 logical sector 数。使用文本约束时需另给 `--iso-sectors`：
+Image mode reuses `--total-sectors` directly as the ISO's logical sector count. With a text constraint, `--iso-sectors` must be given separately:
 
 ```powershell
 --target target.txt --iso-output solved-disc.iso --iso-sectors 2295104
 ```
 
-新建镜像包含最小 ISO9660 文件系统和一个 `SOLVED.BIN` 文件，求解出的 16 个 2048-byte sector 会写到 `--lba ... --lba+15`。当 LBA 为 0 时，这些数据位于 ISO9660 system area，程序会在文件系统数据区再放一份 `SOLVED.BIN` 可见副本。支持稀疏文件的 NTFS 上，新镜像会尽量使用稀疏存储；它的逻辑长度仍然是 `total-sectors × 2048`，刻录软件读取到的空洞是全零。
+A newly created image contains a minimal ISO9660 file system and a `SOLVED.BIN` file, and the 16 solved 2048-byte sectors are written to `--lba ... --lba+15`. When the LBA is 0 those data live in the ISO9660 system area, so the program also places a visible copy of `SOLVED.BIN` in the file system's data area. On NTFS, which supports sparse files, the new image uses sparse storage where possible; its logical length is still `total-sectors × 2048`, and the holes a burning tool reads are all zero.
 
-也可以基于已有 ISO 替换连续 16 个 sector：
+You can also replace 16 consecutive sectors inside an existing ISO:
 
 ```powershell
 dotnet run --project src/DvdImageSolver --configuration Release -- solve `
@@ -283,13 +283,13 @@ dotnet run --project src/DvdImageSolver --configuration Release -- solve `
   --iterations 10000
 ```
 
-模板大小必须是 2048 的整数倍；图片模式下，模板 sector 数还必须等于 `--total-sectors`。替换已分配给目录、文件或 UDF/ISO 元数据的 sector 会破坏原文件系统，因此模板模式应选择预留区域或目标文件已经占用的 extent。新建最小 ISO 会拒绝覆盖固定的 ISO9660 volume descriptor sectors 16、17。
+The template size must be a multiple of 2048; in image mode its sector count must also equal `--total-sectors`. Replacing sectors already allocated to directories, files or UDF/ISO metadata corrupts the original file system, so template mode should target a reserved region or an extent already occupied by the intended file. Creating a minimal ISO refuses to overwrite the fixed ISO9660 volume descriptor sectors 16 and 17.
 
-ISO 中保存的是 2048-byte 用户数据，而不是 619008-bit raw channel stream。标准 DVD 刻录机会重新生成 ID、EDC、ECC、EFMPlus 和 NRZI；因此实际图案还取决于驱动器是否遵循同一编码选择，以及传入求解器的初始 state、DSV 和 pit/land 是否与真实刻录边界一致。
+The ISO holds 2048-byte user data, not the 619008-bit raw channel stream. A standard DVD recorder regenerates ID, EDC, ECC, EFMPlus and NRZI itself, so the actual pattern also depends on whether the drive follows the same encoding choices and on whether the initial state, DSV and pit/land passed to the solver match the real burn boundary.
 
-### 连续铺满盘片或指定 sector 数
+### Filling the whole disc or a specified sector count
 
-`--fill-sectors` 大于16时，程序会从 `--lba` 开始逐个求解连续 ECC Block，并把每一块的最终 state、DSV、pit/land 传递给下一块。sector 数必须是16的倍数。针对容量为2297888 sectors的盘片，整盘命令为：
+When `--fill-sectors` exceeds 16, the program solves contiguous ECC blocks one after another starting at `--lba` and passes each block's final state, DSV and pit/land on to the next. The sector count must be a multiple of 16. For a disc with 2297888 sectors the whole-disc command is:
 
 ```powershell
 dotnet run --project src/DvdImageSolver --configuration Release -- solve `
@@ -317,21 +317,21 @@ dotnet run --project src/DvdImageSolver --configuration Release -- solve `
   --initial-level land
 ```
 
-只做前1600个 sectors 时改成：
+For only the first 1600 sectors, change it to:
 
 ```powershell
 --fill-sectors 1600
 ```
 
-此时输出文件包含从 LBA 0 到1599的1600个 sector；`--total-sectors` 仍表示整张盘的容量，用来计算轨道几何。若 `--lba` 不为0，输出还会保留此前的全零 sector，因此镜像长度为 `(lba + fill-sectors) × 2048`。
+The output file then contains sectors 1600 from LBA 0 to 1599; `--total-sectors` still describes the whole disc's capacity and is used to compute the track geometry. If `--lba` is not 0 the output also keeps the preceding all-zero sectors, so the image length is `(lba + fill-sectors) × 2048`.
 
-范围模式会覆盖包括 ISO9660 descriptor 在内的所有指定 sector，因此输出是可直接刻录的原始2048-byte/sector镜像，而不是可挂载的 ISO9660 文件系统。`--constraint-step`表示自由payload搜索的图像采样间隔；state-control会对落在同一payload码字内的二值样本做多数投票。最终可见度评分不受该稀疏步长限制，会按每个16-bit channel码字中心重新采样图片，并包含派生、固定和SYNC码字。二值图要拉大盘面明暗差，建议`--constraint-step 16`，即每个payload码字都有一个目标；`32`可作为更快但密度减半的折中，`256`只约束约1/16的payload码字，因此整体majority error通常会接近随机水平。整盘共有143618个ECC Blocks，正式运行前应先用160到1600 sectors测量速度和效果。
+Range mode overwrites every specified sector, including the ISO9660 descriptors, so the output is a directly burnable raw 2048-byte-per-sector image rather than a mountable ISO9660 file system. `--constraint-step` is the image sampling interval for the free payload search; state-control takes a majority vote over the binary samples falling inside the same payload codeword. The final visibility score is not limited by that sparse step — it resamples the image at the centre of every 16-bit channel codeword and includes the derived, fixed and SYNC codewords. To maximise the light/dark contrast on the disc surface with a binary image, `--constraint-step 16` is recommended, giving one target per payload codeword; `32` is a faster compromise with half the density, and `256` constrains only about 1/16 of the payload codewords, so the overall majority error usually ends up near random. The whole disc has 143618 ECC blocks, so measure speed and quality on 160 to 1600 sectors before a full run.
 
-dispersion模式始终在每个payload码字中心采样图片，忽略`--constraint-step`的稀疏搜索含义；因此命令中可以省略该参数。
+Dispersion mode always samples the image at every payload codeword centre and ignores the sparse-search meaning of `--constraint-step`, so that parameter can be omitted.
 
-## 文件与图案混合模式
+## Mixed file-and-artwork mode
 
-给出`--data-dir`即启用混合模式。程序把该目录及其子目录递归写成标准 ISO9660 + Joliet 文件系统。`--file-position inner`（默认）将文件放在内圈，图案位于其外侧；`--file-position outer` 将文件内容放到盘尾，图案位于前部元数据之后、文件之前。图案起止边界按 16-sector ECC Block 对齐，始终保留全盘几何，不把剩余绘图区拉伸到整盘。最终 ISO 在 Windows 等系统中可以像普通数据光盘一样打开，Joliet 目录保留中文文件名。
+Supplying `--data-dir` enables mixed mode. The program writes that directory and its subdirectories recursively as a standard ISO9660 + Joliet file system. `--file-position inner` (the default) places the files on the inner ring with the artwork outside them; `--file-position outer` places the file content at the end of the disc and the artwork after the leading metadata and before the files. The artwork start and end boundaries are aligned to 16-sector ECC blocks, the whole-disc geometry is always preserved, and the remaining artwork area is never stretched to fill the disc. The resulting ISO opens like an ordinary data disc in Windows and similar systems, and the Joliet directory preserves Chinese filenames.
 
 ```powershell
 dotnet run --project src/DvdImageSolver --configuration Release -- solve `
@@ -345,17 +345,17 @@ dotnet run --project src/DvdImageSolver --configuration Release -- solve `
   --outer-radius-mm 58
 ```
 
-混合模式默认使用`--algorithm dispersion --fast-output true`，适合直接生成整个外圈。也可显式加`--fast-output false`：此时程序会先编码并回放内圈的所有数据块，求出进入外圈时的 EFMPlus state、DSV 和 pit/land，再用精确边界绘图。精确回放会随内圈数据量增加耗时。
+Mixed mode defaults to `--algorithm dispersion --fast-output true`, which suits generating the whole outer ring directly. `--fast-output false` can also be given explicitly: the program then encodes and replays all the inner-ring data blocks first to obtain the EFMPlus state, DSV and pit/land entering the outer ring, and then draws the artwork with exact boundaries. Exact replay takes longer as the inner-ring data volume grows.
 
-GUI 设计页的“随盘文件”区域可选择文件夹，并切换“文件位置：内圈／外圈”；导出页与之共享设置。该选项随工程保存，也用于流式刻录。流式路径固定使用快速 dispersion：先扫描目录并固定布局，按盘面顺序输出元数据、文件区和图案区，不创建完整临时 ISO；外圈模式先写图案，再写文件。布局完成后若源文件大小发生变化，流式写入会拒绝继续。预览用黄色标出文件系统占用区，颜色不会进入写盘数据。
+The "Files on Disc" area on the GUI Design page can select a folder and switch "File Position: inner ring / outer ring"; the Export page shares the setting. The option is saved with the project and is also used for streaming burn. The streaming path always uses fast dispersion: it scans the directory and fixes the layout first, then emits metadata, file area and artwork area in disc order without creating a complete temporary ISO; in outer-ring mode it writes the artwork first and then the files. If a source file changes size after the layout is fixed, streaming write refuses to continue. The preview marks the file-system area in yellow, and that colour never enters the written data.
 
-此模式不接受`--lba`或`--fill-sectors`，两者由文件布局和盘片容量自动计算。`--drawing-start-lba N` 可在默认绘图起点之后额外留空，但必须处于可绘图区内，并与`--psn-offset`一起对齐到16 sectors。`--file-position outer` 必须与 `--data-dir` 一起使用。
+This mode does not accept `--lba` or `--fill-sectors`; both are computed automatically from the file layout and disc capacity. `--drawing-start-lba N` leaves extra space after the default artwork start, but must stay inside the drawable area and, together with `--psn-offset`, align to 16 sectors. `--file-position outer` must be used together with `--data-dir`.
 
-当前 ISO9660 写入器支持递归目录和 Joliet Unicode 名称；单个文件不能超过4 GiB，且为避免链接环和意外引用目录外数据，`--data-dir`中不接受重解析点/符号链接。
+The current ISO9660 writer supports recursive directories and Joliet Unicode names; a single file cannot exceed 4 GiB, and to avoid link cycles and accidental references to data outside the directory, reparse points and symbolic links are not accepted inside `--data-dir`.
 
-## 半径标定预览
+## Radius calibration preview
 
-标定程序借鉴CD版本的正向投影方式：沿全局channel位置顺序采样，同一个位置先在“生成时假定的螺旋线”上读取目标图，再投到“猜测的实际螺旋线”。多个轨道样本落到同一输出像素时取平均，既保留轨距差累计出的真实相位，又避免逐输出像素反求最近轨道造成的气泡莫尔纹。
+The calibration program borrows the CD version's forward projection approach: it samples in order along global channel positions, reading the target image at each position on the "spiral assumed at generation time" and then projecting it onto the "guessed actual spiral". When several track samples land on the same output pixel they are averaged, which preserves the real phase accumulated from the track-pitch difference while avoiding the bubble-like moiré that per-output-pixel nearest-track inversion produces.
 
 ```powershell
 dotnet run --project src/DvdImageSolver --configuration Release -- calibrate `
@@ -374,13 +374,13 @@ dotnet run --project src/DvdImageSolver --configuration Release -- calibrate `
   --samples-per-sector 16
 ```
 
-`--samples-per-sector`控制正向投影密度，范围1–4096，默认16；DVD每sector约5.16 mm轨道长度，16相当于约0.32 mm一次采样。提高到32或64会减少空像素并改善细节，耗时近似线性增加。预览不提供任意旋转偏移参数；生成与实际螺旋共用0°起点，整体旋转不影响半径标定。预览之外还会输出 `calibration-preview.png.json`，其中`mappingMode`为`forward-channel-splat-average`，并记录采样密度、两组螺距、总圈数和轨道长度。它不包含求解器剩余误差和刻录机实现差异。
+`--samples-per-sector` controls the forward projection density, ranges from 1–4096 and defaults to 16; a DVD sector has about 5.16 mm of track length, so 16 is one sample roughly every 0.32 mm. Raising it to 32 or 64 reduces empty pixels and improves detail, with an approximately linear cost in time. The preview offers no arbitrary rotation offset parameter; generation and the actual spiral share the 0° start, and overall rotation does not affect radius calibration. Besides the preview, `calibration-preview.png.json` is written with `mappingMode` set to `forward-channel-splat-average`, recording the sampling density, both track pitches, the total turn count and the track length. It does not include the solver's residual error or differences in recorder implementation.
 
-标定默认预览整盘。若实际只生成了部分镜像，可给出与求解命令相同的 `--lba` 和 `--fill-sectors`，未写入的盘面区域会保持透明。
+Calibration previews the whole disc by default. If only part of the image was generated, give the same `--lba` and `--fill-sectors` as the solve command, and the unwritten disc area stays transparent.
 
-## 生成 ISO 的读回模拟
+## Readback simulation of a generated ISO
 
-`calibrate` 的输入是源图片，描述"按生成几何写入、按实测几何读回"的理想效果；它使用与生成一致的二阶分界128，`--image-threshold`保留为兼容参数但不改变该预览。`simulate` 则读取已经生成的 ISO 镜像本身：把每个采样到的 payload 字节经 DVD 扰码还原后分类为`0xA5/0x92`，分别显示为0/255，再用实测半径的螺旋线把码字中心投到盘面。为查看旧多阶镜像，读回仍将`0x66`显示为0、`0xB9`显示为85；这些值不用于新图片生成。这是与 cdimage 校准对话框同构的闭环——生成几何已经固化在 ISO 里，模拟只需要一套实测几何参数。
+`calibrate` takes the source image as input and describes the ideal result of "written with the generation geometry, read back with the measured geometry"; it uses the same two-level boundary of 128 as generation, and `--image-threshold` is kept as a compatibility parameter that does not change that preview. `simulate` instead reads the generated ISO image itself: every sampled payload byte is de-scrambled and classified as `0xA5/0x92`, shown as 0/255 respectively, and then the codeword centres are projected onto the disc surface through the spiral of the measured radii. To inspect older multi-level images, readback still shows `0x66` as 0 and `0xB9` as 85; those values are not used for new image generation. This is the same closed loop as the cdimage calibration dialog — the generation geometry is already fixed inside the ISO, so the simulation needs only one set of measured geometry parameters.
 
 ```powershell
 dotnet run --project src/DvdImageSolver --configuration Release -- simulate `
@@ -392,22 +392,22 @@ dotnet run --project src/DvdImageSolver --configuration Release -- simulate `
   --samples-per-sector 16
 ```
 
-`--total-sectors`、`--lba` 与`--fill-sectors`缺省时读取求解命令写出的`drawing.iso.json`（绘制起始LBA与绘制扇区数），没有sidecar时回退为整个ISO文件、从LBA 0开始。`--samples-per-sector`控制每个扇区采样的payload字节个数（1–2048，默认16）。扰码后不属于二阶码表或兼容旧值66/B9的字节跳过不计。文件系统前缀可能偶然命中码表，应使用sidecar中的绘图区间排除它；ISO中本身不存储PI/PO纠错码。输出旁同样写出`readback-preview.png.json`，其中`mappingMode`为`payload-scramble-classify-splat`，并记录分类命中数、螺距与总圈数。
+When `--total-sectors`, `--lba` and `--fill-sectors` are omitted, they are read from the `drawing.iso.json` written by the solve command (the artwork start LBA and the artwork sector count); without a sidecar they fall back to the whole ISO file starting at LBA 0. `--samples-per-sector` controls how many payload bytes are sampled per sector (1–2048, default 16). Bytes that after scrambling are not in the two-level code table or the legacy-compatible values 66/B9 are skipped and not counted. A file-system prefix can accidentally hit the code table, so the artwork range from the sidecar should be used to exclude it; the ISO itself stores no PI/PO error-correction codes. `readback-preview.png.json` is likewise written next to the output with `mappingMode` set to `payload-scramble-classify-splat`, recording the classification hit count, the track pitch and the total turn count.
 
-采样位置取码字中心：生成端 `FastDispersionImageWriter` 按 `PayloadDirectChannelOffset + 8`（16 位码字的一半）把图片目标落在码字中心，读回端使用同一位置，两个方向的投影因此不会相差 8 个通道位（约 1 µm 轨道长度）。除此之外读回与生成共用同一套螺旋线、方向与扰码掩码，所以"生成时的参数"与"预览时的参数"一致时，读回图逐采样复现生成图。
+The sample position is the codeword centre: the generation side's `FastDispersionImageWriter` places the image target at the codeword centre using `PayloadDirectChannelOffset + 8` (half of a 16-bit codeword), and the readback side uses the same position, so the projections in the two directions cannot differ by 8 channel bits (about 1 µm of track length). Apart from that, readback and generation share the same spiral, direction and scrambler mask, so when the generation parameters and the preview parameters agree the readback image reproduces the generated image sample for sample.
 
-预览工作区在切换 ISO 时读取 sidecar 的 `imageMapping.totalSectors`、`innerRadiusMm`、`outerRadiusMm` 并载入标定几何：外部导入的镜像不会因为沿用上一次的盘片尺寸而被压成细环，用户之后的微调仍以这组参数为起点。
+When switching ISO, the Preview workspace reads `imageMapping.totalSectors`, `innerRadiusMm` and `outerRadiusMm` from the sidecar and loads the calibration geometry: an externally imported image is therefore not squeezed into a thin ring by reusing the previous disc size, and the user's later adjustments start from that parameter set.
 
-## 预览工作区的两种模式
+## The Preview workspace's two modes
 
-预览页的输入开关把上面两条路径都暴露出来，二者共用防抖、取消与导出动作：
+The input switch on the Preview page exposes both paths above, and they share the debounce, cancellation and export actions:
 
-- **成品读回**（读回模拟，`simulate`）输入是已生成的 ISO，参数只有一套实测几何，看到的是镜像里真实写下的字节。
-- **设计投影**（标定预览，默认，`calibrate`）输入是源图片，参数是生成/实测两套几何。它不读取 ISO，因此改参数后刷新快得多；代价是画面为源图在实测几何下的投影，不代表镜像里实际存在的码字——求解器误差与文件系统前缀都不会出现在其中。
+- **Image Readback** (readback simulation, `simulate`) takes a generated ISO as input, has only one set of measured geometry parameters, and shows the bytes actually written in the image.
+- **Design Projection** (calibration preview, the default, `calibrate`) takes the source image as input and has the generation and measured geometry pair. It never reads the ISO, so refreshing after a parameter change is much faster; the price is that the picture is the source image projected through the measured geometry and does not represent the codewords actually present in the image — neither the solver's error nor the file-system prefix appears in it.
 
-标定预览直接使用设计页合成图作为输入，与生成镜像的源相同，因此两侧的图案一致。
+Calibration preview takes the Design page composite directly as input, the same source used to generate the image, so the pattern on both sides agrees.
 
-## 仅执行前向编码
+## Forward encoding only
 
 ```powershell
 dotnet run --project src/DvdImageSolver --configuration Release -- encode `
@@ -420,11 +420,11 @@ dotnet run --project src/DvdImageSolver --configuration Release -- encode `
   --initial-level land
 ```
 
-首个 PSN 必须是16的倍数；否则程序会拒绝编码，因为输入没有从 ECC Block 边界开始。
+The first PSN must be a multiple of 16; otherwise the program refuses to encode, because the input does not start on an ECC block boundary.
 
-## 调制表再生成
+## Regenerating the modulation tables
 
-`Encoding/EfmPlusTables.Generated.cs` 由 ECMA-267 Annex G 机械提取生成。若需要从规范 PDF 重新生成：
+`Encoding/EfmPlusTables.Generated.cs` is generated by mechanically extracting ECMA-267 Annex G. To regenerate it from the specification PDF:
 
 ```powershell
 python tools/generate_efm_tables.py ECMA-267.pdf src/DvdImageSolver/Encoding/EfmPlusTables.Generated.cs

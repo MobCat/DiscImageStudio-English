@@ -1,16 +1,16 @@
-# 验证说明
+# Validation notes
 
-本页列出当前源码的可复现检查。自动化回归验证算法、文件布局和应用工作流；实际刻录效果仍取决于刻录机、固件与盘片。
+This page lists the reproducible checks for the current source. Automated regressions verify the algorithms, file layouts and application workflows; the actual burning result still depends on the recorder, its firmware and the disc.
 
-## 本地验证
+## Local validation
 
-最近一次完整架构回归：2026-10-28，覆盖界面修复、标定生成优化与 Verbatim BD-R (64099) 预设（对应提交 `3088802`、`49a0e4d`、`46e2c53`），Windows、.NET SDK 10.0.400（运行时 10.0.11），Release 配置。完整 solution 构建（0 警告、0 错误）与架构回归全部通过；测试入口直接运行自研 Exe harness，不使用 `dotnet test`。
+Most recent full architecture regression: 2026-10-28, covering the interface fixes, the calibration generation optimisation and the Verbatim BD-R (64099) preset (commits `3088802`, `49a0e4d`, `46e2c53`), on Windows with .NET SDK 10.0.400 (runtime 10.0.11) in the Release configuration. The full solution build (0 warnings, 0 errors) and the whole architecture regression passed; the test entry point runs the project's own EXE harness directly and does not use `dotnet test`.
 
-标定刻录结束后已完成生成优化的构建、完整架构回归和 DVD 引擎自检。Verbatim 预设加入后再次通过构建与完整架构回归，验证 GUI 与 CLI 的半径、扇区数、极性一致，以及预设合并和命令行覆盖。v1.3.3 的版本／更新日志校验与发布工具 45 项检查通过；未新增性能测速或实盘刻录结论。
+After calibration burning finished, the generation-optimisation build, the full architecture regression and the DVD engine self-test were completed. Once the Verbatim preset was added, the build and the full architecture regression passed again, verifying that the GUI and CLI agree on radii, sector count and polarity, along with preset merging and command-line overrides. The v1.3.3 version/changelog check and the 45 release-tooling checks passed; no new performance timing or real-disc burn conclusions were added.
 
-已通过的新增回归包含：BD 标定并行开关、默认顺序回调、极性及绘图范围、批次顺序和取消；CD 标定四点采样的坐标位一致、交织与字节序，CD 文件模式内外圈的标量／SIMD 字节一致性；DVD 解析采样与码字采样的坐标、索引、逐字节输出及并行尾批一致性。
+The new regressions that passed include: the BD calibration parallel switch, default ordered callbacks, polarity and artwork range, batch ordering and cancellation; four-point sampling coordinate-bit agreement, interleaving and byte order for CD calibration; scalar/SIMD byte agreement for the inner and outer rings of CD file mode; and coordinate, index, per-byte output and parallel tail-batch agreement for DVD sample parsing and codeword sampling.
 
-在仓库根目录执行：
+Run these from the repository root:
 
 ```powershell
 dotnet restore DiscImageStudio.slnx
@@ -21,22 +21,22 @@ dotnet run --project src/DiscImageStudio.App --configuration Release --no-build 
 ./tests/Test-ReleaseTooling.ps1
 ```
 
-架构回归覆盖：
+The architecture regression covers:
 
-- CD/DVD：黑白映射、抖动、sRGB 伽马、文件与流式一致性、SIMD 与标量采样一致性。
-- CD 文件模式：ISO9660/Joliet 中文文件独立读取、内外圈位置及工程保存、文件区预览、原始扇区几何、文件与前向流输出一致。
-- CD 数据 DAO：Mode 1 EDC 与全部 P/Q 校验方程、主通道字节序、导入区及预间隙地址、数据轨 Q 标识与 CRC、前向 Seek 和短读、内外圈 ISO 完整还原；保留铼德预设 359,845 扇区，并使用模拟刻录机验证与音轨共用的容量限制。原生 IMAPI 测试只构造内存镜像，不创建刻录设备。
-- BD：17PP/EDC/Reed-Solomon、3T/6T 映射与极性、绘图范围清零、UDF 2.01、大于 4 GiB 文件、sidecar 往返与无效边界拒绝。
-- DVD/BD 文件位置：默认内圈兼容、外圈 ISO9660/Joliet 与 UDF 目录独立解析、中文文件内容、完整盘面坐标、不可 Seek 流与文件输出一致、容量及取消保护，以及工程中的位置选项往返。
-- 三态模型：工程 schema 2 往返与 schema 1 升级、预设 schema 4 与旧 schema 合并、`ProjectSession` 的 BD apply/capture。
-- 刻录：操作互斥、进度、顺序写入、超时、取消和资源清理，均使用模拟接口而非真实刻录机。
-- 流式刻录显示：仅设备确认写入量推进进度，CD 音轨／数据、DVD、BD 倍速换算，未知或无效速率、3 秒过期、封盘与结束清理，传输日志节流及迟到事件保护。
-- 标定刻录来源：CD/DVD/BD 标签与保存参数一致，BD 位长、极性和绘图范围，跨盘型切换、速度查询，以及模拟刻录请求和确认文案。
-- 标定：三次轨距、BD 绘图范围与极性、照片矫正、曲线拟合、会话保存恢复、盘型预设同步与参数精度。
-- 预览与窗口：CD/DVD/BD 投影与读回、多显示器和任务栏边界。
-- 文件区预览：内外圈设计投影和带 sidecar 的成品读回标黄、DVD 三次轨距边界、纯绘图及无效布局信息不标黄、错误目录/容量提示、切换与重置清理。黄色叠加不改变 ISO 数据。
+- CD/DVD: black and white mapping, dithering, sRGB gamma, file/streaming consistency, SIMD/scalar sampling consistency.
+- CD file mode: independent reading of ISO9660/Joliet Chinese file names, inner and outer ring positions and project saving, file-area preview, raw sector geometry, file and forward-stream output consistency.
+- CD data DAO: Mode 1 EDC and all P/Q check equations, main-channel byte order, lead-in and pre-gap addresses, data track Q identification and CRC, forward seek and short reads, full inner/outer ring ISO restoration; the Ritek preset's 359,845 sectors are preserved, and a simulated recorder verifies the capacity limit shared with audio tracks. The native IMAPI test only builds an in-memory image and never creates a recording device.
+- BD: 17PP/EDC/Reed-Solomon, 3T/6T mapping and polarity, artwork range zeroing, UDF 2.01, files larger than 4 GiB, sidecar round-trip and rejection of invalid boundaries.
+- DVD/BD file position: default inner-ring compatibility, independent parsing of outer-ring ISO9660/Joliet and UDF directories, Chinese file contents, full disc coordinates, non-seekable streams matching file output, capacity and cancellation protection, and the position option round-tripping in a project.
+- Three-state model: project schema 2 round-trip and schema 1 upgrade, preset schema 4 merging with older schemas, `ProjectSession` BD apply/capture.
+- Burning: operation mutual exclusion, progress, sequential writing, timeouts, cancellation and resource cleanup, all through simulated interfaces rather than a real recorder.
+- Streaming burn display: only device-confirmed writes advance progress, CD audio/data, DVD and BD speed conversion, unknown or invalid rates, the 3-second expiry, finalization and end-of-run cleanup, transfer-log throttling and protection against late events.
+- Calibration burn source: CD/DVD/BD labels agreeing with the saved parameters, BD bit length, polarity and artwork range, cross-family switching, speed queries, and the simulated burn request and confirmation text.
+- Calibration: cubic track pitch, BD artwork range and polarity, photo rectification, curve fitting, session save and restore, disc-family preset synchronisation and parameter precision.
+- Preview and windows: CD/DVD/BD projection and readback, multi-monitor and taskbar boundaries.
+- File-area preview: inner and outer ring Design Projection and sidecar-backed Image Readback highlighted in yellow, DVD cubic track-pitch boundaries, no highlight for artwork-only or invalid layout information, wrong-directory/capacity hints, and clearing on switch and reset. The yellow overlay does not change the ISO data.
 
-GUI 可通过现有命令离屏生成截图：
+The GUI can produce screenshots off-screen with the existing command:
 
 ```powershell
 dotnet run --project src/DiscImageStudio.App --configuration Release --no-build -- ui-snapshot --output artifacts/validation/home.png --tab 0
@@ -45,24 +45,24 @@ dotnet run --project src/DiscImageStudio.App --configuration Release --no-build 
 dotnet run --project src/DiscImageStudio.App --configuration Release --no-build -- ui-snapshot --output artifacts/validation/burn-bd.png --tab 4 --project sample.discproj --burn-source calibration --burn-progress write
 ```
 
-`--burn-progress` 接受 `write`、`buffer`、`finalize`，使用模拟进度生成界面，不启动实际刻录。2026-10-28 核对了 BD 标定宽屏与 800×650 窄窗口、准备和封盘状态；底部写入量、速率、倍速与进度条均可见。此次另通过 DVD 引擎自检，没有执行实盘刻录。
+`--burn-progress` accepts `write`, `buffer` and `finalize` and uses simulated progress to build the interface without starting a real burn. On 2026-10-28 the BD calibration wide layout and the 800×650 narrow window, plus the preparation and finalization states, were checked; the bottom written amount, rate, speed multiplier and progress bar were all visible. A DVD engine self-test also ran at that time; no real-disc burning was performed.
 
-`build` 工作流另执行模块目录的 DVD 自检、两扇区 CD 输出检查和主页截图。发布单文件 EXE 的附加检查见[发布指南](RELEASING.md)。
+The `build` workflow additionally runs the DVD self-test on the module catalog, a two-sector CD output check and a home page screenshot. See the [release guide](RELEASING.md) for the extra checks on the published single-file EXE.
 
-本次另核对了 DVD/BD 各两种文件位置的设计投影、外圈导出页与外圈成品读回，共 8 张离屏截图；DVD/应用自检及发布工具的 45 项回归通过。
+This round also checked the Design Projection for both file positions on DVD and BD plus the outer-ring Export page and outer-ring Image Readback, 8 off-screen screenshots in total; the DVD/application self-tests and the 45 release-tooling regressions passed.
 
-设计页文件选择入口另检查了 DVD、BD、CD、未选文件夹、18 个图层、窄窗口及低窗口高度 7 种界面状态；宽屏图层列表内部滚动，文件选择区域保持可达，构建为 0 警告、0 错误。
+The file-selection entry point on the Design page was additionally checked in 7 interface states — DVD, BD, CD, no folder selected, 18 layers, a narrow window and a short window — where the layer list scrolls internally in the wide layout, the file selection area stays reachable, and the build has 0 warnings and 0 errors.
 
-v1.3.0 另通过 `Build-Release.ps1` 的 .NET 10 自包含单文件验证：隔离目录仅放 EXE，刻录接口构建信息、DVD 自检、两扇区 RAW/WAV/CUE、关闭 CUE 及 WPF 界面渲染均通过。最终内置 .NET / Windows Desktop 10.0.11，并同步保留其完整上游许可声明。
+v1.3.0 additionally passed `Build-Release.ps1`'s .NET 10 self-contained single-file verification: the isolated directory holds only the EXE, and the burning-interface build info, DVD self-test, two-sector RAW/WAV/CUE, CUE-disabled path and WPF interface rendering all passed. The result bundles .NET / Windows Desktop 10.0.11 and keeps the complete upstream licence notices alongside it.
 
-v1.3.2 通过完整架构回归、DVD 引擎及应用模块自检、发布工具 45 项检查。新增回归验证蓝光切换预设后另存与工程确认的极性一致，以及删除最近预设后跨盘型选择与几何同步；画布缩放覆盖 25%–1200% 边界、加减按钮和适应窗口重置。另核对新建 CD、蓝光、DVD 工程设置及 18 图层设计页共 4 张离屏截图。
+v1.3.2 passed the full architecture regression, the DVD engine and application module self-tests, and the 45 release-tooling checks. The new regressions verify that the polarity stays consistent between saved presets and project confirmation after a Blu-ray switch, and that cross-family selection and geometry stay synchronised after deleting a recent preset; canvas zoom covers the 25%–1200% bounds, the plus/minus buttons and the fit-to-window reset. 4 off-screen screenshots were also checked: new CD, Blu-ray and DVD Project Settings plus the 18-layer Design page.
 
-## 实盘验证边界
+## Real-disc validation boundaries
 
-此次文件位置与预览改动没有执行实盘刻录。自动化测试不证明设备写入策略、实际反射亮度或刻录成功率；蓝光功能仍为实验性。
+This round's file-position and preview changes did not include real-disc burning. Automated tests do not prove a device's write strategy, the actual reflected brightness or the burning success rate; Blu-ray remains experimental.
 
-v1.3.1 的 CD 数据盘 DAO 也尚未执行实盘刻录；已经通过完整架构回归、独立单文件 EXE 启动、音轨/CUE、内外圈 ISO 文件内容与成品读回验证。
+v1.3.1's CD data disc DAO has also not been burned to a real disc yet; it has passed the full architecture regression, standalone single-file EXE start-up, audio track/CUE, inner and outer ring ISO file contents, and Image Readback verification.
 
-已经记录的 DVD 三次轨距实拍与参数见 [README 中的前后对比](../README.md#辅助标定展示)。物理模型历史审计见 [PHYSICAL_MODEL_AUDIT.md](PHYSICAL_MODEL_AUDIT.md)，其中结论保留其标明的日期与代码基准，不能代替当前源码验证。
+The recorded DVD cubic track-pitch photographs and parameters are in the [before/after comparison in the README](../README.md#calibration-assistant). The historical audit of the physical models is in [PHYSICAL_MODEL_AUDIT.md](PHYSICAL_MODEL_AUDIT.md); its conclusions keep the dates and code baselines they state and cannot replace validation of the current source.
 
-后续实盘记录应包含版本或提交、刻录机和固件、盘片型号、预设参数、速度、生成/刻录入口与原始照片，避免把某一设备的结果泛化到所有盘片。
+Future real-disc records should include the version or commit, the recorder and firmware, the disc model, the preset parameters, the speed, the generation/burn entry point and the original photographs, so that a result obtained on one device is not generalised to every disc.
