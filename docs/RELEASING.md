@@ -22,7 +22,7 @@ GitHub Actions reads the full version from the configuration and creates the mat
 
 1. Confirm that the GPL-3.0-or-later licence, the privacy policy and the support contact details meet this distribution's requirements. Keep the tag pointing at the build commit, provide the complete corresponding source code and build instructions for that version in the same Release so the source can be obtained together with the EXE/MSIX, and check that GitHub's automatically generated source archive contains the files needed to build. When upgrading dependencies or the self-contained .NET runtime, update the [third-party notices](../THIRD-PARTY-NOTICES.txt) at the same time. The project licence, third-party notices and font agreement are all embedded in the app and can be viewed offline on the About page; the licensing boundaries are described in [LICENSE-NOTICE.md](../LICENSE-NOTICE.md).
 2. On a feature branch, change `VersionPrefix` in `Directory.Build.props` (and set `VersionSuffix` too for a pre-release), and move this round's entries from `Unreleased` in `CHANGELOG.md` into the matching version section. Keep `## Unreleased` for ongoing development.
-3. The version section heading must use the form `## [1.0.27] - YYYY-MM-DD` or `## [1.0.27-rc.1] - YYYY-MM-DD`, replacing the date placeholder with the actual release date, and the section content must not be empty. A pre-release and a final release each need a version section that matches its tag exactly.
+3. The version section heading must use the form `## [1.0.27] - YYYY-MM-DD` or `## [1.0.27-rc.1] - YYYY-MM-DD`, replacing the date placeholder with the actual release date, and the section content must not be empty. A pre-release and a final release each need a version section that matches its tag exactly; write its entries in English as described under "Release note language" below.
 4. Put the version configuration and the release notes into the same release-preparation PR, confirm the `build` workflow passes, and merge into `main`. That push's change set must include both files and the full version in the configuration must actually change before automatic publishing starts.
 5. GitHub Actions runs the checks, creates the version tag automatically and produces a Release draft; the maintainer reviews it and publishes manually.
 
@@ -34,6 +34,14 @@ For a future fix release, for example, set this in `Directory.Build.props`:
 ```
 
 and add a non-empty `## [1.0.27] - YYYY-MM-DD` version section to `CHANGELOG.md` with the real date; merging into `main` then creates the `v1.0.27` tag automatically. For a release candidate, set `VersionSuffix` to `rc.1` and write the changelog version as `1.0.27-rc.1`.
+
+### Release note language
+
+This fork writes its release notes in English only. From 1.3.4 onwards upstream puts `### 中文` and then `### English` subsections inside each dated `## [version] - date` section, with both lists describing the same changes, limitations and validation status. When porting an upstream release, take its English entries, align their wording with this fork's interface terms, and keep every warning; do not add capabilities that have not been verified. After preparing the release, keep `## Unreleased` at the top for the next round of development.
+
+`Get-ReleaseMetadata.ps1` extracts the whole version section and stops only at the next `## ` heading or the end of the file, so any `###` subsections end up in the Release notes in full. Never write a subsection heading as `## ...`, or the version section ends early. The current metadata check verifies that the version section is unique, its date is valid and its content is non-empty; whether the entries are complete still has to be confirmed in release review.
+
+After the release notes the workflow appends download and run instructions, the SHA-256 verification command, and links to the corresponding source code and the build instructions in each README. The download requirements, unsigned status and experimental burn limitation are stated there.
 
 ### Automatic checks and the draft
 
