@@ -2,135 +2,135 @@
 
 ## Unreleased
 
-- 标题栏新增「…」应用菜单，提供「设置…」（Ctrl+,）与「关于…」，主页和工程态均可用；侧边栏底部的「关于」入口移除。
-- 新增设置窗口，分「通用」「存储」两类：深色／浅色／跟随系统主题保存后立即应用到所有窗口，代码绘制的侧边栏、分段控件、盘面画布与任务坞同步刷新。
-- 新增默认工程位置与缓存位置设置：默认工程位置作为新建工程对话框的初始目录，留空使用系统文档目录；缓存位置用于设计合成图、缩略图与预览图，可查看占用、清空本应用缓存文件或打开应用数据目录。清空缓存只删除白名单内的缓存图片与 sidecar，工程和导出文件不受影响，任务运行期间按钮禁用。
-- 应用设置保存在 `%LOCALAPPDATA%\DiscImageStudio\settings.json`，缺失、损坏或更高版本的文件自动回落到默认值；设置不写入 `.discproj`。
-- 开发截图命令 `ui-snapshot` 新增 `--theme dark|light|system`、`--settings-dialog`（默认 760×600，使用一次性设置文件，不改动真实配置）与 `--settings-view general|storage`。
+- The title bar gains a "…" application menu offering "Settings..." (Ctrl+,) and "About...", available both on the home page and with a project open; the "About" entry at the bottom of the sidebar is removed.
+- Added a settings window split into "General" and "Storage": the Dark / Light / Use System Setting theme is applied to all windows immediately after saving, and the code-drawn sidebar, segmented controls, disc canvas and job dock refresh with it.
+- Added default project location and cache location settings: the default project location is the starting directory of the New Project dialog and leaving it blank uses the system Documents folder; the cache location holds design composites, thumbnails and preview images, and you can view its usage, clear this app's cache files, or open the application data folder. Clearing the cache deletes only the allow-listed cache images and sidecars, never project or exported files, and the button is disabled while a job is running.
+- App settings are stored in `%LOCALAPPDATA%\DiscImageStudio\settings.json`; a missing, corrupt or newer-version file falls back to defaults automatically, and settings are never written into `.discproj`.
+- The `ui-snapshot` developer screenshot command gained `--theme dark|light|system`, `--settings-dialog` (760×600 by default, using a one-off settings file so the real configuration is untouched) and `--settings-view general|storage`.
 
 ## [1.3.3] - 2026-10-28
 
-- 新增 Verbatim BD-R (64099) 内置预设，采用用户保存的实测半径、扇区数与映射极性，GUI 和命令行均可使用。
-- 修复蓝光标定流式刻录的来源摘要误显示为 CD，并按标定记录显示蓝光位长、3T/6T 极性和绘图范围。
-- 流式刻录底部固定显示设备已写入量／总量、实时速率和对应倍速；准备、传输、封盘及诊断信息记录到日志。传输量不再覆盖实际写入进度，封盘或长时间没有新写入数据时清除旧速率。
-- BD 标定范围映射接入普通图片生成器的有界并行批处理，并复用四点几何采样；保留原始标定回调、绘图范围、极性和顺序输出。自定义映射仍须明确允许并行。
-- CD 标定复用图片生成的四点几何采样，DVD 标定与码字回调复用已有变轨距 SIMD 路径；保留逐点标量三角函数、回调顺序及音轨交织，DVD 恒定轨距仍使用既有标量回退。
-- CD 文件模式补齐四点采样，按各字节经过交换与 CIRC 映射后的独立物理位置计算，保留文件区、调色索引、扰码及盘尾边界处理。
+- Added the built-in Verbatim BD-R (64099) preset, using the radii, sector count and mapping polarity the user saved, available from both the GUI and the command line.
+- Fixed the streaming burn source summary for Blu-ray calibration wrongly showing CD, and it now shows Blu-ray bit length, 3T/6T polarity and artwork range from the calibration record.
+- The streaming burn dock now always shows device-written volume / total, the real-time rate and the matching speed multiplier; preparation, transfer, finalization and diagnostics go to the log. Transfer volume no longer overrides actual write progress, and the old rate is cleared on finalization or after a long gap with no new writes.
+- BD calibration range mapping now uses the ordinary image generator's bounded parallel batching and reuses four-point geometry sampling, while keeping the original calibration callbacks, artwork range, polarity and ordered output. A custom mapping still has to opt in to parallelism explicitly.
+- CD calibration reuses the image generator's four-point geometry sampling, and DVD calibration and codeword callbacks reuse the existing variable-track-pitch SIMD path; per-point scalar trigonometry, callback order and audio track interleaving are preserved, and constant-track-pitch DVD still uses the existing scalar fallback.
+- CD file mode gained four-point sampling, computed from the independent physical position of each byte after the swap and CIRC mapping, while preserving file-area, palette-index, scrambling and disc-end boundary handling.
 
 ## [1.3.2] - 2026-10-27
 
-- 工程设置对话框可直接换用当前盘型的其他预设；切换前先确认覆盖，取消后保留原有参数且不改变选中项。
-- 主题蓝统一为深色 `#3385FF`、浅色强调 `#74C0FF`；滑钮选择器的选中项改用主题色填充，高度与输入框对齐，选择框右侧的展开箭头缩为紧凑尺寸。
-- 新建工程和工程设置中可右键“自定”预设删除，删除会同步清理最近模板记录。
-- 设计页画布缩放栏常驻右下角，新增“−”“+”按钮并把可缩放范围扩到 25%–1200%（此前只能放大）；“适应窗口”改用刷新图标。缩放仍可用 Ctrl/Alt+滚轮，中键拖动平移。
-- 主页模板卡片的灰色说明显示盘型（“CD”“DVD”“蓝光”）。
-- 修复预设切换确认框误响应普通按键、蓝光切换后另存预设沿用旧极性，以及删除最近预设后盘型与下一选中项不一致的问题。
+- The Project Settings dialog can switch to another preset of the current disc family; the overwrite is confirmed first, and cancelling keeps the original parameters and the current selection unchanged.
+- The theme blue is unified as `#3385FF` in dark and the accent as `#74C0FF` in light; the selected item of a segmented control now uses a theme-colour fill, its height aligns with the input boxes, and the drop-down arrow on the right of a combo box is reduced to a compact size.
+- Custom ("Custom") presets can be deleted from a context menu in New Project and Project Settings, and deleting one also clears the matching recent-template record.
+- The Design page zoom bar is now permanently docked at the bottom right, with new "−" and "+" buttons and a zoom range widened to 25%–1200% (previously it could only zoom in); "Fit to window" now uses a refresh icon. Ctrl/Alt + mouse wheel still zooms and the middle mouse button still pans.
+- The gray caption on home page template cards now shows the disc family ("CD", "DVD", "Blu-ray").
+- Fixed the preset-switch confirmation reacting to ordinary key presses, a preset saved after switching to Blu-ray keeping the old polarity, and the disc family not matching the next selection after deleting a recent preset.
 
 ## [1.3.1] - 2026-10-26
 
-- CD 新增随盘文件模式：未选择文件夹时保留 WAV 音轨，选择文件夹后生成 ISO9660/Joliet Mode 1 数据盘；文件支持内圈或外圈放置，工程保存、ISO 导出与流式刻录共用布局。
-- CD 设计投影和带布局信息的成品读回以黄色显示文件区，保留完整盘面坐标；支持中文目录与文件，随盘内容保持原始字节。
-- CD 数据盘流式刻录改为与音轨共用 DAO 会话和容量边界处理，修复铼德医疗水蓝盘预设误报“剩余容量不足”的问题；保留 ATIP 标定的 359,845 扇区及既有末端限制。
-- 新增 Mode 1 校验码、DAO 数据轨标识、前向流和内外圈 ISO 完整还原回归。CD 数据盘 DAO 已通过软件及原生内存镜像验证，尚未完成实盘刻录验证；即时刻录仍为实验性功能。
+- CD gained a files-on-disc mode: with no folder selected the WAV audio track is kept, and once a folder is selected an ISO9660/Joliet Mode 1 data disc is generated; files can be placed on the inner or outer ring, and project saving, ISO export and streaming burn share the layout.
+- CD Design Projection and Image Readback with layout information show the file area in yellow and keep full disc coordinates; Chinese directory and file names are supported, and on-disc content keeps its original bytes.
+- CD data disc streaming burn now shares the DAO session and capacity-boundary handling with the audio track, fixing the Ritek Medical Aqua Disc preset wrongly reporting "insufficient remaining capacity"; the ATIP-calibrated 359,845 sectors and the existing end-of-disc limit are preserved.
+- Added regressions for Mode 1 check codes, DAO data track identification, forward streaming and full inner/outer ring ISO restoration. CD data disc DAO has been verified in software and against a native memory image but has not yet been verified by burning a real disc; instant burning remains experimental.
 
 ## [1.3.0] - 2026-10-26
 
-- 全部应用、光盘模块与工具升级到 .NET 10，CI、EXE 和 MSIX 打包使用 .NET 10 SDK；发布的自包含 EXE 继续无需另装运行时。
-- DVD／蓝光设计页新增“随盘文件”区域，可直接选择文件夹和内圈／外圈位置，与导出页共享设置。
-- DVD 和蓝光的文件与图案混合模式新增“文件位置：内圈／外圈”，默认内圈；工程保存、ISO 导出与流式刻录使用同一布局。外圈文件模式保留必要的文件系统信息，绘图范围自动避开文件区。
-- DVD／蓝光的设计投影和带布局信息的成品读回，以黄色显示文件区（含文件系统），并显示图例；颜色仅用于预览。没有配套布局信息的外部镜像不推测文件占用范围。
+- All apps, disc modules and tools upgraded to .NET 10, and CI, EXE and MSIX packaging now use the .NET 10 SDK; the published self-contained EXE still needs no separate runtime install.
+- The DVD / Blu-ray Design page gained a "Files on Disc" area where the folder and its inner-ring / outer-ring position can be chosen directly, sharing the setting with the Export page.
+- The DVD and Blu-ray mixed files-and-artwork mode gained "File Position: inner ring / outer ring", defaulting to the inner ring; project saving, ISO export and streaming burn use the same layout. Outer-ring file mode keeps the file-system information it needs, and the artwork range automatically avoids the file area.
+- DVD / Blu-ray Design Projection and Image Readback with layout information show the file area (including the file system) in yellow with a legend; the colour is used only in preview. For external images without matching layout information, the occupied file range is not guessed.
 
 ## [1.2.0] - 2026-10-26
 
-### 工程与设计
+### Project and design
 
-- 重构为设计、预览、导出、刻录和辅助标定五个工作区，CD、DVD、BD 共用当前工程与盘片参数。
-- 新增 `.discproj` 工程保存与打开、最近工程缩略图、未保存检查和工程设置；支持将当前盘片参数保存为用户预设。
-- 新增多图层设计画布，可导入多张图片、移动、缩放、旋转、调整层次与显隐；导出和刻录统一使用高分辨率合成图。原自动环形复制入口移除，布局由设计画布管理。
-- 新增任务坞，集中显示运行日志、任务进度、取消入口及输出位置；导出与刻录页面统一展示当前工程来源。
+- Restructured into five workspaces — Design, Preview, Export, Burn and Calibration Assistant — with CD, DVD and BD sharing the current project and disc parameters.
+- Added `.discproj` project save and open, recent-project thumbnails, unsaved-change checks and Project Settings, plus the ability to save the current disc parameters as a user preset.
+- Added a multi-layer design canvas that can import several images and move, scale, rotate, reorder and show/hide them; export and burning both use the high-resolution composite. The former automatic annular-copy entry point is removed, and layout is managed by the design canvas.
+- Added the job dock, which collects the run log, job progress, cancellation entry point and output location; the Export and Burn pages show the current project source consistently.
 
-### 影调、蓝光与标定
+### Tone, Blu-ray and calibration
 
-- 影调集中到设计页，支持 0–100% 抖动强度、亮度调整、sRGB 线性化及 CD 二阶／四阶灰度。新工程默认 75% 抖动；缺少影调设置的旧工程保留原二值映射。
-- 为 CD、DVD 和 BD 生产命令增加可选影调参数；CD/DVD 采用确定性的逻辑字节抖动，BD 在源图分辨率处理，生成、流式刻录与设计投影采用一致设置。
-- BD ISO 新增配套 JSON 元数据，记录盘片几何、绘图范围、映射极性、影调与 UDF 时间戳；预览打开 ISO 时可自动恢复对应参数。
-- 改进辅助标定拟合：自动扩展搜索范围，蓝光在残差仍较大时继续扩宽；增加最大偏差、异常点标记与误差门槛，避免应用偏差过大的结果。
+- Tone moved to the Design page, supporting 0–100% dither strength, brightness adjustment, sRGB linearization and CD two-level / four-level grayscale. New projects default to 75% dither; older projects without tone settings keep their original binary mapping.
+- Added optional tone parameters to the CD, DVD and BD production commands; CD/DVD use deterministic logical-byte dithering and BD processes at source-image resolution, with generation, streaming burn and Design Projection using consistent settings.
+- The BD ISO gained matching JSON metadata recording disc geometry, artwork range, mapping polarity, tone and UDF timestamps; opening the ISO in the preview can restore the matching parameters automatically.
+- Improved calibration fitting: the search range expands automatically and keeps widening for Blu-ray while the residual is still large; maximum deviation, outlier marking and an error threshold were added so results with excessive deviation are not applied.
 
-### 兼容性与迁移
+### Compatibility and migration
 
-- 工程与用户预设统一支持 CD/DVD/BD；保留旧工程 schema 1、旧预设 schema 2/3 及已有 CD 音轨的读取兼容。生产命令保留已有参数，新增影调参数均为可选。
-- 开发截图命令 `ui-snapshot` 的页面编号现为：0 主页、1 设计、2 预览、3 导出、4 刻录、5 标定；关于窗口改用 `--about-dialog`，`--live-processing` 已移除。
-- 蓝光与直接刻录仍为实验性功能；硬件实测范围见 `docs/VALIDATION.md`，不将自动化测试等同于新增实盘验证。
+- Projects and user presets now support CD/DVD/BD uniformly; reading compatibility is kept for project schema 1, preset schema 2/3 and existing CD audio tracks. Production commands keep their existing parameters, and the new tone parameters are all optional.
+- The `ui-snapshot` developer screenshot command now numbers pages: 0 Home, 1 Design, 2 Preview, 3 Export, 4 Burn, 5 Calibration; the About window moved to `--about-dialog`, and `--live-processing` was removed.
+- Blu-ray and direct burning remain experimental; the measured hardware coverage is in `docs/VALIDATION.md`, and automated tests are not treated as new real-disc validation.
 
 ## [1.1.0] - 2026-10-25
 
-### 新增
+### Added
 
-- 单层 25 GB BD-R 实验模式：源图布局、3T/6T 映射与反转、盘片参数和预设、实时预览、ISO 生成及辅助标定，GUI 与命令行均可使用。暂不支持双层盘，实盘明暗仍需验证。
-- 蓝光内圈文件支持 UDF 2.01 和大于 4 GiB 的单文件；生成与流式刻录共享完整盘面几何、分段文件布局和有界数据流。
-- 全新未格式化 BD-R 的无备用区顺序刻录，保留完整 12,219,392 扇区。开刻前校验容量、空白状态和起始地址；不自动缩容、不在失败后自动重写，增加分块超时和清理诊断。
-- CD、DVD、BD 制作与实时预览可开启黑白抖动和独立 sRGB 伽马校正，默认关闭。文件生成、流式刻录及源图预览采用一致的处理选项。
-- 辅助标定支持照片透视矫正、曲线描点拟合、参数快照与回填；DVD 使用三次轨距模型，内置已验证的 Verbatim DVD-R AZO (43533) 预设，并附校准前后实拍和记录。
-- 新增独立黑白抖动工具、DVD 灰阶实验工具与蓝光字节分析工具，附使用说明和可复现验证步骤。
+- Single-layer 25 GB BD-R experimental mode: source image layout, 3T/6T mapping and inversion, disc parameters and presets, live preview, ISO generation and the calibration assistant, available from both the GUI and the command line. Dual-layer discs are not supported yet, and real-disc light and shade still need verification.
+- Blu-ray inner-ring files support UDF 2.01 and single files larger than 4 GiB; generation and streaming burn share the full disc geometry, segmented file layout and bounded data stream.
+- Sequential recording without a spare area on a brand-new unformatted BD-R, keeping all 12,219,392 sectors. Capacity, blank state and start address are checked before burning starts; capacity is never reduced automatically and there is no automatic rewrite after a failure, and block timeouts plus cleanup diagnostics were added.
+- CD, DVD and BD generation and live preview can enable black and white dithering and a separate sRGB gamma correction, both off by default. File generation, streaming burn and source image preview use consistent processing options.
+- The calibration assistant supports photo perspective rectification, curve point tracing and fitting, parameter snapshots and write-back; DVD uses the cubic track-pitch model, a verified Verbatim DVD-R AZO (43533) preset is built in, and before/after photographs and records are included.
+- Added the standalone black and white dither tool, the DVD grayscale probe tool and the Blu-ray byte probe tool, with usage notes and reproducible verification steps.
 
-### 改进与修复
+### Improvements and fixes
 
-- 实时预览支持 CD/DVD/BD 源图投影和已有产物读回，可指定分辨率，使用适应窗口、1:1 像素、鼠标缩放及拖动；修复预设同步、浏览命令及 DVD 读回采样位置。
-- CD/DVD 使用统一的黑白二阶映射；黑白输入保留离散像素，环形复制缩放后重新抖动。旧多阶产物的读回继续识别原有灰阶。
-- CD 与 DVD 采样加入 SIMD 与边界回退，蓝光采用有界并行生成及整数 SIMD；回归测试验证标量、并行与流式输出一致性。
-- 刻录页显示按设备确认写入数据计算的速率，串行化设备查询与刻录操作；准备及封盘阶段不显示过时速率。实际刻录仍为实验性功能。
-- 修复多显示器、不同 DPI 与任务栏位置下的最大化边界，统一参数的小数精度；主页和最近任务支持蓝光，CD WAV 输出可选择是否生成 CUE。
-- 标定记录使用 schema 6，不接受旧版图案记录；盘片预设及已有音轨/镜像的兼容范围见对应文档。所有实际几何与亮度结论仍需结合具体设备和介质验证。
+- Live preview supports CD/DVD/BD source image projection and readback of existing output, with a settable resolution, fit-to-window, 1:1 pixels, mouse zoom and pan; preset synchronisation, the browse command and DVD readback sample positions were fixed.
+- CD/DVD use a unified two-level black and white mapping; black and white input keeps discrete pixels, and annular compositing re-dithers after scaling. Readback of older multi-level output still recognises the original gray levels.
+- CD and DVD sampling gained SIMD with boundary fallback, and Blu-ray uses bounded parallel generation with integer SIMD; regression tests verify that scalar, parallel and streaming output agree.
+- The Burn page shows a rate computed from device-confirmed written data, and device queries and burn operations are serialized; stale rates are not shown during preparation or finalization. Actual burning remains experimental.
+- Fixed maximised-window bounds across multiple monitors, different DPI and taskbar positions, and unified the decimal precision of parameters; the home page and recent jobs support Blu-ray, and CD WAV output can choose whether to write a CUE sheet.
+- Calibration records use schema 6 and do not accept older pattern records; the compatibility range for disc presets and existing audio tracks/images is described in the matching documents. Every conclusion about actual geometry and brightness still needs verification with the specific device and media.
 
-### 开源与文档
+### Open source and documentation
 
-- 采用 GPL-3.0-or-later，与 CDImage 衍生的 CD 交织实现保持兼容；补齐原作者版权与致谢。
-- 保留第三方组件和 HarmonyOS Sans 字体各自的完整许可；“关于”页可离线查看，单文件 EXE 同样包含授权文本。
-- README 补充 ECMA-267、ECMA-359、ISO/IEC 30190:2021 等标准及官方链接；整理工具入口、验证文档、缓存忽略规则与个人路径示例。
+- Adopted GPL-3.0-or-later, compatible with the CD interleaving implementation derived from CDImage; the original author's copyright and acknowledgements were completed.
+- The complete licences of the third-party components and of the HarmonyOS Sans font are kept; they can be viewed offline on the About page, and the single-file EXE contains the licence texts too.
+- The README now lists ECMA-267, ECMA-359, ISO/IEC 30190:2021 and other standards with official links; tool entry points, validation documents, cache ignore rules and personal path examples were tidied up.
 
 ## [1.0.26] - 2026-09-12
 
-- 首次提供 GitHub Release：Windows x64 单文件 EXE 已内置 .NET，下载后即可运行。
-- 包含 CD WAV + CUE / RAW 音轨生成、DVD 绘图 ISO 与混合数据盘，以及 GUI、命令行、实时预览、环形复制和可编辑盘片预设。
-- 包含 CD WAV 与流式音轨的字节序修正，保留旧 RAW 兼容；用户实盘反馈确认修复后无重影。
-- 包含实验性 CD/DVD 直接刻录。已有部分实盘反馈，不同设备、盘片及各刻录入口的验证覆盖仍有限。
-- 发布程序由 GitHub Actions 构建，执行模块回归、DVD 自检、最终单文件 RAW/WAV 生成与 GUI 截图检查；发布说明提供 SHA-256 下载校验值。
-- 统一版本来源，修改版本号和对应发布日志后才生成发布包；支持预发布版本及手动重试，保留独立的 MSIX 打包流程。
+- First GitHub Release: the Windows x64 single-file EXE bundles .NET, so it runs as soon as it is downloaded.
+- Includes CD WAV + CUE / RAW audio track generation, the DVD artwork ISO and mixed data discs, plus the GUI, command line, live preview, annular compositing and editable disc presets.
+- Includes byte-order fixes for CD WAV and streaming audio tracks while keeping compatibility with older RAW; real-disc user feedback confirmed there is no ghosting after the fix.
+- Includes experimental CD/DVD direct burning. There is some real-disc feedback, but coverage across devices, discs and burn paths is still limited.
+- Release binaries are built by GitHub Actions, which runs module regressions, the DVD self-test, final single-file RAW/WAV generation and a GUI screenshot check; the release notes give a SHA-256 checksum for the download.
+- The version has a single source, and a release package is produced only after the version number and matching release notes change; pre-release versions and manual retries are supported, and the separate MSIX packaging flow is kept.
 
-## 首次 GitHub 发布前的开发记录
+## Development history before the first GitHub release
 
-以下为累计开发过程记录，验证状态反映各条记录对应的阶段；当前验证范围以 `docs/VALIDATION.md` 为准。
+The entries below are the accumulated development record. The verification state reflects the stage each entry belongs to; the current verification scope is governed by `docs/VALIDATION.md`.
 
-- 新增 GitHub Actions 发布策略：以 `Directory.Build.props` 统一维护版本，仅在合并到 `main` 的变更同时修改版本与发布日志且完整版本变化时，经过 CI 和最终单文件验证后自动生成版本标签、自包含 Windows x64 EXE 与 GitHub Release 草稿；支持 alpha/beta/rc，发布说明包含 SHA-256，维护者检查后公开，已公开制品不覆盖。MSIX 保留手动通道并复用 CI，默认读取同一版本配置。
-- CD 文件输出默认改为标准 WAV（44.1 kHz、16 位、双声道 PCM），同时生成 `FILE ... WAVE` CUE：cdrecord 可直接读取 WAV，ImgBurn 打开配套 CUE；旧 `.raw` 仍保持大端字节序。WAV 在延迟交织完成后转为小端，CD 流式刻录显式采用相同的无头小端 PCM，修正与 IMAPI 音频输入约定不一致的问题。音轨预览支持 WAV 的 RIFF 块解析与字节序归一化。新增非对称音频样本和 Windows RAW 镜像字节保留回归。
-- DVD 流式刻录新增混合文件夹支持：先计算 ISO9660/Joliet 布局，再通过不可回退的前向流依次写入内圈文件、ECC 对齐填充和外圈图案，无需保存完整临时 ISO。
-- 将环形复制的正式生成中间图由 2048×2048 提升至 8192×8192，保存预览使用 4096×4096，实时预览使用 2048×2048；运行日志新增每份副本的实际像素尺寸，避免低分辨率中间图损失细节。
-- 新增盘片预设：CD 80/74 分钟、12 cm 单层 DVD、8 cm 单层 Mini DVD；生成页与实时预览页双向同步，手动改值后自动切换为“自定义参数”。
-- 新增“铼德医疗水蓝盘（实测）”CD 预设：24.911275–57.931155 mm、359845 扇区。
-- 新增“Verbatim CD-R AZO (43438)（实测）”CD 预设：24.837775–58.020875 mm、359848 扇区。
-- 新增“Verbatim DVD-R AZO (43533)（实测）”DVD 预设：23.9968875–57.9779875 mm、2,297,888 扇区。
-- CD/DVD 盘片预设改为分层 JSON：内置层随应用更新，用户层首次生成自定义 CD/DVD 参数并只保存新增、同 ID 覆盖和禁用项；预设只包含容量与生成几何，不再混入图片画布或实测校准参数。格式预留默认文本语言和名称/说明资源键，后续接入 i18n 无需破坏用户 JSON。界面支持打开和重新加载用户层，无效编辑会显示具体错误并保留上一次有效预设。
-- 盘片预设的小数参数改为按实际精度完整显示，不再固定截断为 3 位或 6 位小数。
-- 修正 CD 内置预设、GUI 和命令行默认扫描速度：由旧工具沿用的 1100 mm/s 改为 ECMA-130 范围下限 1200 mm/s，并增加标准范围回归检查。
-- 新增实验性的 CD 与纯绘图 DVD 流式直接刻录：生成器通过 64 MiB 有界内存缓冲向 Windows IMAPI2 连续供数，不保存完整 ISO/RAW；自动化测试已通过，实体盘验证仍待完成。
-- 修复 CD 流式刻录在部分刻录机上因冗余设置 `DoNotFinalizeMedia` 而返回 `0xC0AA0502` 的问题；会话关闭和防缓冲欠载改用 IMAPI2 安全默认值，并确保清理阶段的 `ReleaseMedia` 错误不会覆盖真正的首个写入错误。
-- CD 流式刻录由会额外占用 2 扇区并强制拒绝音轨的 Track-at-Once 改为 Raw CD/DAO：通过 Windows RAW 镜像构造器流式加入 lead-in、Cooked R-W 子通道和 lead-out，使实测 359,845 扇区内容刚好落在同一盘片的 DAO 合法边界；另保留最多 3 个 DAO 扇区的受限末端 overburn，超过时仍会在写入前拒绝。设备不报告速度时使用实机确认可接受的约 16× 稳定设置回退。
-- 流式刻录界面新增当前盘片支持的写入速度读取与选择；自动模式在刻录前重新读取当次 CD/DVD 介质并选择最低可用速率以降低错误率，手动选择保持不变，刻录时记录设备实际采用速度。
-- 根据 DVD 实盘结果反转 dispersion 黑白字节极性：黑色改用扰码域 `0xA5`，白色改用 `0x92`；纯绘图与混合流式刻录同步生效。
-- 将流式刻录的有界内存缓冲从 16 MiB 提升到 64 MiB，并将开刻前预填充从 8 MiB 提升到 32 MiB，为 16× DVD 写入提供更充足的生成抖动余量。
-- MSIX 打包前现在会清理 RID 构建缓存、检查发布期间的源码变动，并直接验证包内刻录组件已移除旧 `DoNotFinalizeMedia` 设置，防止主程序版本已更新但嵌入旧刻录 DLL。
-- 新增独立 `DiscImageStudio.Burning` 抽象层、刻录机枚举、空白盘/容量检查、二次确认、进度和取消处理；原镜像文件工作流保持不变。
-- 新增“环形复制（自动份数）”图片处理模式：同一源图自动复制多份、朝光盘外侧环形排列，并支持可调内外安全边界。
-- 修正环形复制布局：份数保持自动计算，空间不足时统一等比缩小所有副本，确保不变形、不裁切且彼此不重叠。
-- 新增独立 `DiscImageStudio.Imaging` 图片预处理层，CD、DVD 共用，并可供未来蓝光模块复用。
-- 独立实时预览页现同时支持 CD 与 DVD；对应参数双向同步，参数变化经 450ms 防抖后自动刷新。
-- CD 几何预览改为与 DVD 一致的采样平均灰度模式。
-- DVD 界面与模块固定使用快速纹理算法、快速输出和顺时针（CW）螺旋，不再显示算法与方向选择框。
-- 新增界面内 PNG 图片加载与展示，并修复日志框高度受全局输入框样式限制的问题。
-- 修复 .NET 9 WPF 使用 `StreamSource` 加载 PNG 时错误启用 URI 缓存忽略选项而导致预览加载失败的问题。
-- 修复签名 MSIX 中 CD 生成/预览写入运行日志时因 WPF 与不变区域模式冲突而崩溃的问题。
-- 新增统一 WPF GUI。
-- 合并 CD-DA 与 DVD 工作流，同时保持 DVD 引擎隔离。
-- 新增 `DiscImageStudio.Core` 光盘模块抽象层。
-- 新增 CD 与 DVD 模块适配器，并为未来蓝光模块预留扩展点。
-- 新增 MSIX 打包、商店资源、GitHub CI 与发布文档。
+- Added the GitHub Actions release policy: `Directory.Build.props` holds the single version, and only when a change merged into `main` modifies both the version and the release notes and the full version changes does CI — after CI and final single-file verification — automatically create the version tag, the self-contained Windows x64 EXE and a GitHub Release draft; alpha/beta/rc are supported, the release notes include a SHA-256, the maintainer reviews before publishing, and published artefacts are never overwritten. MSIX keeps a manual channel that reuses CI and reads the same version configuration by default.
+- CD file output now defaults to standard WAV (44.1 kHz, 16-bit, two-channel PCM) and writes a `FILE ... WAVE` CUE alongside it: cdrecord can read the WAV directly and ImgBurn opens the matching CUE; legacy `.raw` keeps big-endian byte order. WAV is converted to little-endian after delayed interleaving completes, and CD streaming burn explicitly uses the same headerless little-endian PCM, fixing the mismatch with the IMAPI audio input convention. Audio track preview supports RIFF chunk parsing and byte-order normalization for WAV. Added regressions for asymmetric audio samples and for preserving Windows RAW image bytes.
+- DVD streaming burn gained hybrid folder support: the ISO9660/Joliet layout is computed first, then a non-rewindable forward stream writes the inner-ring files, ECC alignment padding and the outer-ring artwork in order, without saving a complete temporary ISO.
+- Raised the production intermediate image for annular compositing from 2048×2048 to 8192×8192, with 4096×4096 for saved previews and 2048×2048 for live preview; the run log now records the actual pixel size of each copy, so detail is no longer lost to a low-resolution intermediate.
+- Added disc presets: CD 80/74 minute, 12 cm single-layer DVD, 8 cm single-layer Mini DVD; the generation page and the live preview page synchronise both ways, and a manual edit automatically switches to "Custom Parameters".
+- Added the "Ritek Medical Aqua Disc (measured)" CD preset: 24.911275–57.931155 mm, 359,845 sectors.
+- Added the "Verbatim CD-R AZO (43438) (measured)" CD preset: 24.837775–58.020875 mm, 359,848 sectors.
+- Added the "Verbatim DVD-R AZO (43533) (measured)" DVD preset: 23.9968875–57.9779875 mm, 2,297,888 sectors.
+- CD/DVD disc presets moved to layered JSON: the built-in layer updates with the app, while the user layer first creates custom CD/DVD parameters and stores only additions, same-ID overrides and disabled entries; presets contain only capacity and generation geometry and no longer mix in image canvas or measured calibration parameters. The format reserves a default text language and name/description resource keys, so adding i18n later will not break user JSON. The interface can open and reload the user layer, and an invalid edit shows a specific error and keeps the last valid preset.
+- Decimal parameters of disc presets are now shown at their full actual precision instead of being truncated to a fixed 3 or 6 decimal places.
+- Corrected the default scan velocity for the built-in CD presets, the GUI and the command line: the 1100 mm/s inherited from the older tool became 1200 mm/s, the lower bound of the ECMA-130 range, with regression checks for the standard range added.
+- Added experimental streaming direct burning for CD and artwork-only DVD: the generator feeds Windows IMAPI2 continuously through a bounded 64 MiB memory buffer without saving a complete ISO/RAW; automated tests pass and real-disc verification is still outstanding.
+- Fixed CD streaming burn returning `0xC0AA0502` on some recorders because of a redundant `DoNotFinalizeMedia` setting; session closing and buffer-underrun protection now use IMAPI2's safe defaults, and a `ReleaseMedia` error during cleanup can no longer mask the real first write error.
+- CD streaming burn moved from Track-at-Once, which used 2 extra sectors and rejected audio tracks outright, to Raw CD/DAO: lead-in, Cooked R-W subchannel and lead-out are streamed in through the Windows RAW image builder, so the measured 359,845 sectors of content land exactly on the DAO legal boundary of the same disc; a restricted end-of-disc overburn of up to 3 DAO sectors is also allowed, and anything beyond that is still rejected before writing. When a device reports no speeds, it falls back to the stable ~16× setting confirmed acceptable on real hardware.
+- The streaming burn interface gained reading and selecting the write speeds the current disc supports; automatic mode re-reads the CD/DVD media just before burning and picks the lowest available speed to reduce errors, a manual selection is left untouched, and the speed the device actually used is recorded during the burn.
+- Reversed the dispersion black/white byte polarity based on real DVD results: black now uses `0xA5` and white uses `0x92` in the scrambled domain; this applies to both artwork-only and hybrid streaming burn.
+- Raised the streaming burn's bounded memory buffer from 16 MiB to 64 MiB and the pre-fill before burning from 8 MiB to 32 MiB, giving 16× DVD writing more generation jitter margin.
+- MSIX packaging now clears the RID build cache, checks for source changes during publishing, and verifies directly that the burning component inside the package has dropped the old `DoNotFinalizeMedia` setting, preventing a shipped package whose main app is updated but which embeds an old burning DLL.
+- Added the separate `DiscImageStudio.Burning` abstraction layer, recorder enumeration, blank/capacity checks, second confirmation, progress and cancellation handling; the original image-file workflow is unchanged.
+- Added the "Annular Copy (automatic count)" image processing mode: one source image is copied several times automatically and arranged in a ring towards the outer disc, with adjustable inner and outer safety margins.
+- Corrected the annular copy layout: the copy count is still computed automatically, and when space runs out all copies are scaled down uniformly so they never distort, crop or overlap.
+- Added the separate `DiscImageStudio.Imaging` image pre-processing layer, shared by CD and DVD and reusable by a future Blu-ray module.
+- The standalone live preview page now supports both CD and DVD; the matching parameters synchronise both ways, and a parameter change refreshes automatically after a 450 ms debounce.
+- The CD geometry preview now uses the same sampled average grayscale mode as DVD.
+- The DVD interface and module now always use the fast texture algorithm, fast output and a clockwise (CW) spiral; the algorithm and direction selectors are no longer shown.
+- Added PNG image loading and display inside the interface, and fixed the log box height being limited by the global text-box style.
+- Fixed preview loading failing on .NET 9 WPF because loading a PNG through `StreamSource` wrongly enabled the ignore-URI-cache option.
+- Fixed a crash in the signed MSIX when CD generation/preview wrote to the run log, caused by a conflict between WPF and invariant-region mode.
+- Added the unified WPF GUI.
+- Merged the CD-DA and DVD workflows while keeping the DVD engine isolated.
+- Added the `DiscImageStudio.Core` optical disc module abstraction layer.
+- Added the CD and DVD module adapters and reserved extension points for a future Blu-ray module.
+- Added MSIX packaging, store assets, GitHub CI and release documentation.

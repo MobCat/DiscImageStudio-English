@@ -1,18 +1,18 @@
 # License notice
 
-Disc Image Studio 采用 **GNU General Public License v3.0 or later（GPL-3.0-or-later）**，许可证全文见 [LICENSE](LICENSE)。本项目可按 GPL 第 3 版或任何后续版本使用、修改和分发；软件不提供担保。
+Disc Image Studio is released under the **GNU General Public License v3.0 or later (GPL-3.0-or-later)**; the full licence text is in [LICENSE](LICENSE). This project may be used, modified and distributed under version 3 of the GPL or any later version, and comes with no warranty.
 
-Copyright (c) 2026 Disc Image Studio contributors。
+Copyright (c) 2026 Disc Image Studio contributors.
 
-CD 交织实现包含从 [CDImage](https://github.com/arduinocelentano/cdimage) 移植并修改的代码，其原作者版权为 Copyright (C) 2008-2022 arduinocelentano，上游采用 GPL 第 3 版或后续版本。因此本项目整体分发采用兼容的 GPL-3.0-or-later。相关文件保留来源与修改说明。
+The CD interleaving implementation includes code ported from [CDImage](https://github.com/arduinocelentano/cdimage) and modified; its original author's copyright is Copyright (C) 2008-2022 arduinocelentano, and upstream is licensed under the GPL version 3 or later. The project's overall distribution therefore uses the compatible GPL-3.0-or-later. The affected files retain their provenance and modification notes.
 
-分发修改版或二进制程序时，应遵守 GPL 对版权声明、许可证、修改说明及对应源代码的要求。发布 EXE/MSIX 时需提供与该构建对应的完整源代码及构建说明；仅提供与二进制无关的最新开发源码不够。
+When distributing a modified version or a binary program you must satisfy the GPL's requirements for copyright notices, the licence, modification notes and the corresponding source code. Publishing an EXE/MSIX requires the complete source code and build instructions that correspond to that build; offering only the latest development source, unrelated to the binary, is not enough.
 
-第三方组件和独立资源继续适用其原有许可证：
+Third-party components and separate resources keep their own licences:
 
-- CommunityToolkit.Mvvm、MahApps.Metro.IconPacks 及其依赖：详见 [第三方声明](THIRD-PARTY-NOTICES.txt)。Lucide 图标另包含 ISC 和继承自 Feather 的 MIT 条款。
-- 自包含 EXE/MSIX 携带 .NET 10 与 Windows 桌面运行时，继续适用其 MIT 许可及上游第三方条款，完整文本保留在同一份[第三方声明](THIRD-PARTY-NOTICES.txt)中。
-- HarmonyOS Sans SC 字体：作为独立字体资源适用 [HarmonyOS Sans 字体许可协议](src/DiscImageStudio.App/Assets/Fonts/HarmonyOS-Sans-LICENSE.txt)，本项目不改变其授权。
-- 引用的 ECMA / ISO 标准文档与用户自行导入的图片不因本项目授权而改变其权利归属。
+- CommunityToolkit.Mvvm, MahApps.Metro.IconPacks and their dependencies: see the [third-party notices](THIRD-PARTY-NOTICES.txt). The Lucide icons additionally carry ISC terms and MIT terms inherited from Feather.
+- The self-contained EXE/MSIX carry .NET 10 and the Windows Desktop Runtime, which keep their MIT licence and upstream third-party terms; the full texts are kept in the same [third-party notices](THIRD-PARTY-NOTICES.txt).
+- The HarmonyOS Sans SC font: as a separate font resource it is governed by the [HarmonyOS Sans Font License Agreement](src/DiscImageStudio.App/Assets/Fonts/HarmonyOS-Sans-LICENSE.txt), and this project does not change its licensing.
+- The referenced ECMA / ISO standard documents and any images the user imports do not change ownership because of this project's licence.
 
-应用“关于”页可离线查看项目许可证、第三方声明和字体协议；这些文本嵌入程序集，随单文件 EXE 和 MSIX 一起分发。重新分发时须保留适用的第三方声明。
+The app's About page shows the project licence, third-party notices and font agreement offline; these texts are embedded in the assembly and ship with both the single-file EXE and the MSIX. Applicable third-party notices must be retained when redistributing.
