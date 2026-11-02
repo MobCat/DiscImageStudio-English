@@ -1,5 +1,7 @@
 <div align="center">
 
+**English** | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md)
+
 ![Banner](docs/images/DiscImageStudio_Banner_2.png)
 
 <h2>The complete tool for generating and burning visible images on disc surfaces</h2>
@@ -90,6 +92,7 @@ The workflow and parameters are described in the [calibration assistant notes](d
 
 ### Application modes
 
+- Multilingual interface: click the "Settings" button in the top-right corner and choose English, 简体中文, 繁體中文 or Use System Setting under "General → Language", then save and restart the app. Language and theme both follow the system by default, and explicitly saved choices are kept. With Use System Setting, Traditional Chinese system locales (`zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant`) get Traditional Chinese, other Chinese locales get Simplified Chinese, and every other locale gets English.
 - Dual entry point: with no arguments it opens the GUI; with arguments it runs the unified command line.
 - Modular: CD, DVD and Blu-ray plug in through `IOpticalDiscModule` with a unified command catalog and job contract; see the [architecture notes](docs/ARCHITECTURE.md).
 
@@ -157,6 +160,7 @@ docs/                        Architecture, engine, preset and release documents
 | Document | Contents |
 | --- | --- |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Module abstraction, layer boundaries and extension rules |
+| [LOCALIZATION.md](docs/LOCALIZATION.md) | Interface language settings, system language fallback and translation resource maintenance |
 | [DVD_ENGINE.md](docs/DVD_ENGINE.md) | Conventions, encoding chain and self-test coverage of the DVD NRZI image constraint solver |
 | [CD_AUDIO_COMPATIBILITY.md](docs/CD_AUDIO_COMPATIBILITY.md) | CD audio track formats, byte order and ghosting troubleshooting |
 | [ADDING_BLURAY.md](docs/ADDING_BLURAY.md) | Blu-ray module physical model, generation/burn chain and extension points |
