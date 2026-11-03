@@ -5,7 +5,8 @@
 - Added a Japanese interface (日本語) under Settings → General → Language, written in casual Japanese with kanji and hiragana; names such as CD-R, DVD and Blu-ray stay in English. A Japanese system locale now follows the system to Japanese instead of English. In Japanese the app uses the installed Yu Gothic UI (then Meiryo UI) so kanji take Japanese glyph forms, with the bundled font as fallback.
 - Added a simple Japanese interface, にほんご（ひらがな）, written only in hiragana with simpler words and spaces between phrases; katakana remains only for unavoidable loanwords such as ディスク and ファイル. It is selected explicitly, never from the system language, and the tests reject any kanji in it.
 - `ui-snapshot --language` accepts `ja` and `ja-Hira`.
-- The README screenshots now show the English interface, and the Simplified and Traditional Chinese READMEs get their own screenshots. They use original procedurally drawn sample artwork, and `tools/ReadmeScreenshots/Update-ReadmeScreenshots.ps1` regenerates all of them from a staged sample scene without touching the user's own recent projects or settings.
+- Added Japanese (`README.ja.md`) and hiragana-only Japanese (`README.ja-Hira.md`) READMEs; every README now links all five languages, as do the build instructions in the release notes.
+- The README screenshots now show the English interface, and the Simplified Chinese, Traditional Chinese, Japanese and hiragana-only Japanese READMEs get their own screenshots. They use original procedurally drawn sample artwork, and `tools/ReadmeScreenshots/Update-ReadmeScreenshots.ps1` regenerates all of them from a staged sample scene without touching the user's own recent projects or settings.
 
 ## [1.3.4] - 2026-11-02
 
