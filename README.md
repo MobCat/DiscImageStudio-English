@@ -31,6 +31,11 @@ Disc Image Studio is a Windows tool for generating and burning disc-surface imag
 
 Disc Image Studio converts an image into data that satisfies the physical-layer constraints of CD, DVD and single-layer BD-R media, so that burning it makes the pattern visible to the naked eye on the disc surface.
 
+## Translation notes
+
+The translation of this project was done back at v1.3.3 however an hour after I found this project and started on this work, v1.3.4 came out adding translations as well.
+So this project is kinda pointless now. I'll keep it maintained a little but translations can be done by anyone now with simple edits to json files.
+
 ## Interface preview
 
 ![Home: templates and recent projects](docs/images/ui-home.png)
@@ -92,7 +97,7 @@ The workflow and parameters are described in the [calibration assistant notes](d
 
 ### Application modes
 
-- Multilingual interface: click the "Settings" button in the top-right corner and choose English, 简体中文, 繁體中文 or Use System Setting under "General → Language", then save and restart the app. Language and theme both follow the system by default, and explicitly saved choices are kept. With Use System Setting, Traditional Chinese system locales (`zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant`) get Traditional Chinese, other Chinese locales get Simplified Chinese, and every other locale gets English.
+- Multilingual interface: click the "Settings" button in the top-right corner and choose English, 简体中文, 繁體中文, 日本語, にほんご（ひらがな） (hiragana-only Japanese) or Use System Setting under "General → Language", then save and restart the app. Language and theme both follow the system by default, and explicitly saved choices are kept. With Use System Setting, Traditional Chinese system locales (`zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant`) get Traditional Chinese, other Chinese locales get Simplified Chinese, Japanese locales get Japanese, and every other locale gets English.
 - Dual entry point: with no arguments it opens the GUI; with arguments it runs the unified command line.
 - Modular: CD, DVD and Blu-ray plug in through `IOpticalDiscModule` with a unified command catalog and job contract; see the [architecture notes](docs/ARCHITECTURE.md).
 
@@ -210,13 +215,3 @@ The project is released under the [GNU GPL v3.0 or later](LICENSE) (`GPL-3.0-or-
 Thanks to [arduinocelentano's CDImage project](https://github.com/arduinocelentano/cdimage), which demonstrated how to form a visible image on the disc surface by generating CD audio tracks. This project's CD interleaving implementation is ported from its related code and further modified, and the idea of drawing on a CD surface was inspired by it. The work of CDImage's original author and contributors provided an important foundation for this project.
 
 ---
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=jiafeimiao-k-cat%2Fdiscimagestudio&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=jiafeimiao-k-cat/discimagestudio&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=jiafeimiao-k-cat/discimagestudio&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=jiafeimiao-k-cat/discimagestudio&type=date&legend=top-left" />
- </picture>
-</a>

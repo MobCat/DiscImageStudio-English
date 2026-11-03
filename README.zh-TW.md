@@ -31,13 +31,18 @@ Disc Image Studio 是一款在 Windows 上執行的光碟表面圖像製作與�
 
 Disc Image Studio 可將一張圖片轉換為符合 CD、DVD 與單層 BD-R 光碟實體層限制的資料，燒錄後讓光碟表面呈現肉眼可見的圖案。
 
+## 翻譯說明
+
+本專案的翻譯工作是在 v1.3.3 時完成的。然而就在我發現這個專案並開始翻譯的一小時後，v1.3.4 發布了，同樣加入了翻譯功能。
+所以這個分支現在有點多餘了。我會繼續少量維護，但現在任何人只要簡單編輯 JSON 檔案就能完成翻譯。
+
 ## 介面預覽
 
-![首頁：範本與最近專案](docs/images/ui-home.png)
+![首頁：範本與最近專案](docs/images/ui-home.zh-TW.png)
 
-![設計頁：圖層畫布與影調](docs/images/ui-design.png)
+![設計頁：圖層畫布與影調](docs/images/ui-design.zh-TW.png)
 
-![匯出頁：淺色佈景主題與輸出映像](docs/images/ui-export.png)
+![匯出頁：淺色佈景主題與輸出映像](docs/images/ui-export.zh-TW.png)
 
 ---
 
@@ -92,7 +97,7 @@ Disc Image Studio 提供一套智慧且精準的輔助校準流程。相較於�
 
 ### 應用程式形式
 
-- 多語言介面：按一下右上角的「設定」按鈕，在「一般 → 語言」選擇簡體中文、繁體中文、English 或跟隨系統，儲存並重新啟動應用程式後生效。語言預設跟隨系統：台灣、香港、澳門及 `zh-Hant` 中文使用繁體中文，其他中文使用簡體中文，非中文系統使用英文。已明確儲存的語言偏好會保留。
+- 多語言介面：按一下右上角的「設定」按鈕，在「一般 → 語言」選擇簡體中文、繁體中文、English、日本語、にほんご（ひらがな）（只用平假名的日文）或跟隨系統，儲存並重新啟動應用程式後生效。語言預設跟隨系統：台灣、香港、澳門及 `zh-Hant` 中文使用繁體中文，其他中文使用簡體中文，日文系統使用日文，其他系統使用英文。已明確儲存的語言偏好會保留。
 - 佈景主題也預設跟隨系統；已明確儲存的深色、淺色或跟隨系統設定會保留。
 - 雙入口：不帶參數時開啟 GUI；帶參數時進入統一命令列。
 - 模組化：CD、DVD 與藍光透過 `IOpticalDiscModule` 接入，共用命令目錄與任務契約，詳見[架構說明](docs/ARCHITECTURE.md)。
@@ -211,13 +216,3 @@ CD 共通編碼部分也參考了 [ECMA-130，第 2 版（CD-ROM，1996）](http
 感謝 [arduinocelentano 的 CDImage 專案](https://github.com/arduinocelentano/cdimage)，它展示了透過產生 CD 音軌，在碟面形成可見圖像的方法。本專案的 CD 交錯實作由其相關程式碼移植並持續修改，CD 碟面繪圖的構想也受到其啟發。CDImage 原作者及貢獻者的工作，為本專案提供了重要基礎。
 
 ---
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=jiafeimiao-k-cat%2Fdiscimagestudio&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=jiafeimiao-k-cat/discimagestudio&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=jiafeimiao-k-cat/discimagestudio&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=jiafeimiao-k-cat/discimagestudio&type=date&legend=top-left" />
- </picture>
-</a>

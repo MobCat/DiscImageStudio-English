@@ -31,13 +31,18 @@ Disc Image Studio 是一个运行在 Windows 的光盘盘面图像生成与刻�
 
 Disc Image Studio 可将一张图片转换成符合 CD、DVD 与单层 BD-R 光盘物理层约束的数据，刻录后将使光盘盘面呈现肉眼可见的图案。
 
+## 翻译说明
+
+本项目的翻译工作是在 v1.3.3 时完成的。然而就在我发现这个项目并开始翻译的一小时后，v1.3.4 发布了，同样加入了翻译功能。
+所以这个分支现在有点多余了。我会继续少量维护，但现在任何人只需简单编辑 JSON 文件就能完成翻译。
+
 ## 界面预览
 
-![主页：模板与最近工程](docs/images/ui-home.png)
+![主页：模板与最近工程](docs/images/ui-home.zh-CN.png)
 
-![设计页：图层画布与影调](docs/images/ui-design.png)
+![设计页：图层画布与影调](docs/images/ui-design.zh-CN.png)
 
-![导出页：浅色主题与输出镜像](docs/images/ui-export.png)
+![导出页：浅色主题与输出镜像](docs/images/ui-export.zh-CN.png)
 
 ---
 
@@ -92,7 +97,7 @@ Disc Image Studio 提供了一套智能且精准的辅助标定流程，相较�
 
 ### 应用形态
 
-- 多语言界面：点击右上角「设置」按钮，在「通用 → 语言」选择简体中文、繁體中文、English 或跟随系统，保存并重启应用后生效。语言和主题默认均跟随系统，已保存的明确选择继续保留；跟随系统时区分简体和繁体中文，其他系统语言使用英文。
+- 多语言界面：点击右上角「设置」按钮，在「通用 → 语言」选择简体中文、繁體中文、English、日本語、にほんご（ひらがな）（只用平假名的日文）或跟随系统，保存并重启应用后生效。语言和主题默认均跟随系统，已保存的明确选择继续保留；跟随系统时区分简体和繁体中文，日文系统使用日文，其他系统语言使用英文。
 - 双入口：不带参数将打开 GUI；带参数则进入统一命令行。
 - 模块化：CD、DVD 与蓝光通过 `IOpticalDiscModule` 接入，统一命令目录与任务契约，详见[架构说明](docs/ARCHITECTURE.md)。
 
@@ -210,13 +215,3 @@ CD 公共编码部分还参考了 [ECMA-130，第 2 版（CD-ROM，1996）](http
 感谢 [arduinocelentano 的 CDImage 项目](https://github.com/arduinocelentano/cdimage)，它展示了通过生成 CD 音轨在盘面形成可见图像的方法。本项目的 CD 交织实现由其相关代码移植并继续修改，CD 盘面绘图思路也受其启发。CDImage 原作者及贡献者的工作为本项目提供了重要基础。
 
 ---
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=jiafeimiao-k-cat%2Fdiscimagestudio&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=jiafeimiao-k-cat/discimagestudio&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=jiafeimiao-k-cat/discimagestudio&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=jiafeimiao-k-cat/discimagestudio&type=date&legend=top-left" />
- </picture>
-</a>
